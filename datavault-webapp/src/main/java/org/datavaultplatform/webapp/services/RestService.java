@@ -423,7 +423,7 @@ public class RestService {
     }
     
     public VaultInfo addDataManager(String vaultId, String dataManagerUUN) {
-        HttpEntity<?> response = put(brokerURL + "/vaults/" + vaultId + "/addDataManager", VaultInfo.class, dataManagerUUN);
+        HttpEntity<?> response = post(brokerURL + "/vaults/" + vaultId + "/addDataManager", VaultInfo.class, dataManagerUUN);
         return (VaultInfo)response.getBody();
     }
     
@@ -491,5 +491,10 @@ public class RestService {
 
     public void deleteArchiveStore(String archiveStoreId) {
         delete(brokerURL + "/admin/archivestores/" + archiveStoreId, String.class);
+    }
+
+    public VaultInfo updateVaultDescription(String vaultId, String vaultDescription) {
+        HttpEntity<?> response = post(brokerURL + "/vaults/" + vaultId + "/updateVaultDescription", VaultInfo.class, vaultDescription);
+        return (VaultInfo)response.getBody();
     }
 }

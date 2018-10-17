@@ -221,7 +221,7 @@
                                     <strong>Review Date</strong>
                                 </label>
                                 <span class="glyphicon glyphicon-info-sign" aria-hidden="true" data-toggle="tooltip" 
-                                        title="The date by which the vault should be reviewed for decision as to whether it should be deleted or whether there are funds available to support continued storage.&nbsp;If you wish to extend the review date further into the future, please contact the support team to discuss the funding of the storage for the vault. If on the other hand you wish the vault to be deleted, bring the review date forward so that deletion may be considered.">
+                                        title="The date by which the vault should be reviewed for decision as to whether it should be deleted or whether there are funds available to support continued storage.&nbsp;If you wish to extend the review date further into the future, please contact the support team to discuss the funding of the storage for the vault.">
                                 </span>
                                 <@spring.bind "vault.reviewDate" />
                                 <input class="form-control" id="reviewDate" name="reviewDate" placeholder="yyyy-mm-dd" <#if datasets?size == 0> disabled</#if>/>
@@ -251,7 +251,7 @@
 
             $( "#grantEndDate" ).datepicker();
             $( "#reviewDate" ).datepicker({
-              minDate: new Date()
+                minDate: '+1m'
             });
 
             $.validator.addMethod(
@@ -266,6 +266,25 @@
                     }
                 },
                 "Please enter a valid date in YYYY-MM-DD format."
+            );
+            $.validator.addMethod(
+                    "reviewDate",
+                    function(value, element) {
+                        // put your own logic here, this is just a (crappy) example
+
+                        if (value){
+                            var inAMonth = new Date();
+                            inAMonth.setMonth(inAMonth.getMonth() + 1);
+                            inAMonth.setHours( 0,0,0,0 );
+
+                            var selectedDate = new Date(value);
+
+                            return selectedDate >= inAMonth;
+                        } else {
+                            return true;
+                        }
+                    },
+                    "The review date must be at least one month in the future. The review date is the date at which a decision may be made about potentially deleting the data. If you believe you need the review date to be sooner, please contact the support team using the Contact button at the top of the page."
             );
 
             $('button[type="submit"]').on("click", function() {
@@ -295,7 +314,8 @@
                     },
                     reviewDate : {
                         required: true,
-                        date: true
+                        date: true,
+                        reviewDate: true
                     }
                 },
                 highlight: function (element) {
