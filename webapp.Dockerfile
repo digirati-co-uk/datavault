@@ -9,7 +9,7 @@ ARG LOCAL_DATAVAULT_DIR="./datavault"
 
 ENV DATAVAULT_HOME "/docker_datavault-home"
 
-RUN apk add --no-cache su-exec openssh curl perl perl-xml-libxml perl-mail-imapclient perl-io-socket-ssl perl-time-modules perl-data-dumper
+RUN apk add --no-cache su-exec openssh curl perl perl-xml-libxml perl-mail-imapclient perl-io-socket-ssl perl-time-modules perl-data-dumper perl-mime-tools
 
 COPY --from=0 /usr/local/bin/ep /usr/local/bin/ep
 COPY --from=0 /usr/local/bin/wait-for-it /usr/local/bin/wait-for-it
