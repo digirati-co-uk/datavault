@@ -9,6 +9,8 @@ public interface DepositDAO {
     
     public void update(Deposit deposit);
     
+    public void delete(Deposit deposit);
+    
     public List<Deposit> list(String sort);
 
     public Deposit findById(String Id);

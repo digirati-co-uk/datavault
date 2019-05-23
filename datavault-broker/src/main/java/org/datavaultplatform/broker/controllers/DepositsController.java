@@ -142,6 +142,8 @@ public class DepositsController {
         deposit.setPersonalDataStatement(createDeposit.getPersonalDataStatement());
         deposit.setDepositPaths(new ArrayList<DepositPath>());
 
+        // TODO : this can never do anything the value is initialised to an empty array in the previous line
+        // we should remove
         System.out.println("Deposit File Path: ");
         for (DepositPath dPath : deposit.getDepositPaths()){
             System.out.println("\t- " + dPath.getFilePath());
@@ -177,6 +179,54 @@ public class DepositsController {
         vaultsService.checkRetentionPolicy(vault.getID());
 
         return new ResponseEntity<>(deposit.convertToResponse(), HttpStatus.OK);
+    }
+    
+    @RequestMapping(value = "/deposits/{depositid}/restart", method = RequestMethod.POST)
+    public Deposit restartDeposit(@RequestHeader(value = "X-UserID", required = true) String userID,
+                                   @PathVariable("depositid") String depositID) throws Exception{
+        Deposit deposit;
+
+        User user = usersService.getUser(userID);
+        deposit = depositsService.getUserDeposit(user, depositID);
+
+        if (user == null) {
+            throw new Exception("User '" + userID + "' does not exist");
+        } else {
+            if (!user.isAdmin()) {
+                throw new Exception("Only an admin can restart a deposit");
+            }
+        }
+
+        if (deposit == null) {
+            throw new Exception("Deposit '" + depositID + "' does not exist");
+        }
+        
+        // remove the failed attempts data from the database
+        Vault vault = deposit.getVault();
+        depositsService.deleteDeposit(deposit);
+
+        List<FileStore> userStores = user.getFileStores();
+        System.out.println("There is " + userStores.size() + "user stores.");
+
+        ArrayList<String> paths = new ArrayList<String>();
+        for(DepositPath dPath : deposit.getDepositPaths()){
+            if(dPath.getPathType() == Path.PathType.FILESTORE) {
+            //if(dPath.getPathType() == Path.PathType.USER_UPLOAD) {
+                paths.add(dPath.getFilePath());
+            }
+        }
+        System.out.println("There is " + paths.size() + " deposit path");
+
+        // Get last Deposit Event
+        Event lastEvent = deposit.getLastNotFailedEvent();
+        List<ArchiveStore> archiveStores = archiveStoreService.getArchiveStores();
+        archiveStores = this.addArchiveSpecificOptions(archiveStores);
+        
+        // Add the deposit object
+        depositsService.addDeposit(vault, deposit, "", "");
+        runDeposit(archiveStores, deposit, paths, lastEvent);
+
+        return deposit;
     }
     
     @RequestMapping(value = "/deposits/{depositid}/manifest", method = RequestMethod.GET)
@@ -412,46 +462,6 @@ public class DepositsController {
     	}
     	
     	return archiveStores;
-    }
-
-    @RequestMapping(value = "/deposits/{depositid}/restart", method = RequestMethod.POST)
-    public Deposit restartDeposit(@RequestHeader(value = "X-UserID", required = true) String userID,
-                                   @PathVariable("depositid") String depositID) throws Exception{
-        Deposit deposit;
-
-        User user = usersService.getUser(userID);
-        deposit = depositsService.getUserDeposit(user, depositID);
-
-        if (user == null) {
-            throw new Exception("User '" + userID + "' does not exist");
-        } else {
-            if (!user.isAdmin()) {
-                throw new Exception("Only an admin can restart a deposit");
-            }
-        }
-
-        if (deposit == null) {
-            throw new Exception("Deposit '" + depositID + "' does not exist");
-        }
-
-        List<FileStore> userStores = user.getFileStores();
-        System.out.println("There is " + userStores.size() + "user stores.");
-
-        ArrayList<String> paths = new ArrayList<String>();
-        for(DepositPath dPath : deposit.getDepositPaths()){
-            if(dPath.getPathType() == Path.PathType.FILESTORE) {
-                paths.add(dPath.getFilePath());
-            }
-        }
-        System.out.println("There is " + paths.size() + " deposit path");
-
-        // Get last Deposit Event
-        Event lastEvent = deposit.getLastNotFailedEvent();
-        List<ArchiveStore> archiveStores = archiveStoreService.getArchiveStores();
-        archiveStores = this.addArchiveSpecificOptions(archiveStores);
-        runDeposit(archiveStores, deposit, paths, lastEvent);
-
-        return deposit;
     }
 
     private Job runDeposit(List<ArchiveStore> archiveStores, Deposit deposit, List<String> paths, Event lastEvent) throws Exception{

@@ -38,6 +38,10 @@ public class DepositsService {
         depositDAO.save(deposit);
     }
     
+    public void deleteDeposit(Deposit deposit) {
+    	depositDAO.delete(deposit);
+    }
+    
     public void updateDeposit(Deposit deposit) {
         depositDAO.update(deposit);
     }

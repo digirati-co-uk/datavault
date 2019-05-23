@@ -50,6 +50,19 @@ public class DepositDAOImpl implements DepositDAO {
             }
         }
     }
+    
+    @Override
+    public void delete(Deposit deposit) {
+        
+        if (deposit != null) {
+        	Session session = this.sessionFactory.openSession();
+	        Transaction tx = session.beginTransaction();
+	        session.delete(deposit);
+	        session.flush() ;
+	        tx.commit();
+	        session.close();
+        }
+    }
  
     @SuppressWarnings("unchecked")
     @Override
