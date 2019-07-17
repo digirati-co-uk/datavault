@@ -45,7 +45,7 @@ pipeline {
             }
         }
 
-        stage('test') {
+        stage('unit tests') {
             steps {
                 sh 'mvn clean test -U --batch-mode'
             }
@@ -57,6 +57,18 @@ pipeline {
                 sh 'docker build -t $IMAGE_REPOSITORY_WEBAPP:latest -f webapp.Dockerfile .'
                 sh 'docker build -t $IMAGE_REPOSITORY_BROKER:latest -f broker.Dockerfile .'
                 sh 'docker build -t $IMAGE_REPOSITORY_WORKER:latest -f worker.Dockerfile .'
+            }
+        }
+
+        stage('e2e tests') {
+            steps {
+                sh '''docker-compose -f docker-compose-jenkins.yml -d
+                      docker-compose -f docker-compose-jenkins.yml run --entrypoint "npx cypress run" e2e
+                      rc=$?
+                      docker-compose -f docker-compose-jenkins.yml logs
+                      docker-compose down --timeout 1
+                      exit $rc
+                '''
             }
         }
 
