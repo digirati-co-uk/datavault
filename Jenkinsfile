@@ -62,7 +62,7 @@ pipeline {
 
         stage('e2e tests') {
             steps {
-                sh '''docker-compose -f docker-compose-jenkins.yml -d
+                sh '''docker-compose -f docker-compose-jenkins.yml up -d
                       docker-compose -f docker-compose-jenkins.yml run --entrypoint "npx cypress run" e2e
                       rc=$?
                       docker-compose -f docker-compose-jenkins.yml logs
