@@ -18,6 +18,7 @@ ARG SHELLCHECK_VERSION=0.4.6-1
 ARG GIT_VERSION=1:2.17.1-1ubuntu0.4
 ARG DOCKER_CE_VERSION=5:18.09.7~3-0~ubuntu-bionic
 ARG PRE_COMMIT_VERSION=1.17.0
+ARG DOCKER_COMPOSE_VERSION=1.24.1
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends openjdk-8-jdk-headless maven=$MAVEN_VERSION python3=$PYTHON_VERSION \
@@ -30,7 +31,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends docker-ce=$DOCKER_CE_VERSION \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* \
-    && pip3 install pre-commit==$PRE_COMMIT_VERSION \
+    && pip3 install pre-commit==$PRE_COMMIT_VERSION docker-compose==$DOCKER_COMPOSE_VERSION \
     && useradd -m -d /home/build -s /bin/bash -u 1010 build
 
 ENV JAVA_HOME="/usr/lib/jvm/java-8-openjdk-amd64"
