@@ -3,7 +3,9 @@ package org.datavaultplatform.webapp.controllers.admin;
 import org.datavaultplatform.common.model.Group;
 import org.datavaultplatform.common.model.User;
 import org.datavaultplatform.webapp.exception.EntityNotFoundException;
+import org.datavaultplatform.webapp.exception.InvalidUunException;
 import org.datavaultplatform.webapp.services.RestService;
+import org.datavaultplatform.webapp.services.UserLookupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -30,8 +32,14 @@ public class AdminSchoolsController {
 
     private RestService restService;
 
+    private UserLookupService userLookupService;
+
     public void setRestService(RestService restService) {
         this.restService = restService;
+    }
+
+    public void setUserLookupService(UserLookupService userLookupService) {
+        this.userLookupService = userLookupService;
     }
 
     @GetMapping("/admin/schools")
@@ -171,7 +179,20 @@ public class AdminSchoolsController {
     }
 
     private Optional<User> getUser(String userId) {
-        return Optional.ofNullable(restService.getUser(userId));
+        try {
+            return Optional.of(userLookupService.ensureUserExists(userId));
+        } catch (InvalidUunException e) {
+            logger.error(e.getMessage(), e);
+            // TODO this is probably the wrong thing to do here in an environment with access to the UoE LDAP server
+            //  but without this fallback it would be impossible to build the roles & permissions framework in an
+            //  environment without LDAP access. Additionally, this method wraps the returned user in an Optional solely
+            //  to validate that the user exists in the DB - this is unnecessary with LDAP access as the lookup service
+            //  persists any LDAP users that aren't yet present in the DB. In the event that someone tries to assign a
+            //  role to a user who doesn't exist in LDAP an InvalidUunException will be thrown so the calling code
+            //  should be refactored to add the user feedback on the exception rather than when this Optional
+            //  is not present.
+            return Optional.ofNullable(restService.getUser(userId));
+        }
     }
 
     private Optional<Role> getRole(String roleId) {

@@ -126,6 +126,7 @@
 
     <bean id="adminSchoolsController" class="org.datavaultplatform.webapp.controllers.admin.AdminSchoolsController">
         <property name="restService" ref="restService" />
+        <property name="userLookupService" ref="userLookupService" />
     </bean>
 
     <bean id="adminVaultsController" class="org.datavaultplatform.webapp.controllers.admin.AdminVaultsController">

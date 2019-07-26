@@ -192,6 +192,28 @@
             $('#delete-role-user-id').val(userId);
             $('#delete-role-user-name').text(userName);
         });
+
+        $("#new-user-name").autocomplete({
+            autoFocus: true,
+            appendTo: "#add-new-dialog",
+            minLength: 2,
+            source: function(request, response) {
+                var term = request.term;
+                $.ajax({
+                    url: "${springMacroRequestContext.getContextPath()}/vaults/autocompleteuun/"+term,
+                    type: 'GET',
+                    dataType: "json",
+                    success: function( data ) {
+                        response( data );
+                    }
+                });
+            },
+            select: function(event, ui) {
+                var attributes = ui.item.value.split(" - ");
+                this.value = attributes[0];
+                return false;
+            }
+        });
     </script>
 
 </@layout.vaultLayout>
