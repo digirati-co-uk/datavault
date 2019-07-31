@@ -33,12 +33,13 @@
     <div id="add-new-dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="add-new-user-title" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form class="form form-horizontal" role="form" action="${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user" method="post">
+                <form id="create-form" class="form form-horizontal" role="form" action="${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user" method="post">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times" aria-hidden="true"></i></button>
                         <h4 class="modal-title" id="add-new-user-title">Add new user</h4>
                     </div>
                     <div class="modal-body">
+                        <div id="create-error" class="alert alert-danger hidden" role="alert"></div>
                         <div class="form-group ui-widget">
                             <label for="new-user-name" class="control-label col-sm-2">Name:</label>
                             <div class="col-sm-10">
@@ -68,12 +69,13 @@
     <div id="update-existing-dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="update-existing-title" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form class="form form-horizontal" role="form" action="${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user/update" method="post">
+                <form id="update-form" class="form form-horizontal" role="form" action="${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user/update" method="post">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times" aria-hidden="true"></i></button>
                         <h4 class="modal-title" id="update-existing-title">Update user</h4>
                     </div>
                     <div class="modal-body">
+                        <div id="update-error" class="alert alert-danger hidden" role="alert"></div>
                         <div class="form-group ui-widget">
                             <label for="role-update-user-name" class="control-label col-sm-2">Name:</label>
                             <div class="col-sm-10">
@@ -104,11 +106,12 @@
     <div id="delete-dialog" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="delete-title" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
-                <form class="form form-horizontal" role="form" action="${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user/delete" method="post">
+                <form id="delete-form" class="form form-horizontal" role="form" action="${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user/delete" method="post">
                     <div class="modal-header">
                         <button type="button" class="close" data-dismiss="modal" aria-hidden="true"><i class="fa fa-times" aria-hidden="true"></i></button>
                         <h4 class="modal-title" id="delete-title">Remove user</h4>
                     </div>
+                    <div id="delete-error" class="alert alert-danger hidden" role="alert"></div>
                     <div class="modal-body">
                         <label>Are you sure you want to remove the role assignment for user <span id="delete-role-user-name"></span>?</label>
                     </div>
@@ -134,10 +137,6 @@
 
         <h1 id="role-assignments-title">${school.name}</h1>
 
-        <#if error??>
-            <div id="error-feedback" class="alert alert-danger" role="alert">${error}</div>
-        </#if>
-
         <div id="add-new">
             <a href="#" data-toggle="modal" data-target="#add-new-dialog">+ Add new user to school</a>
         </div>
@@ -157,8 +156,8 @@
                             <td>${assignment.user.firstname} ${assignment.user.lastname}</td>
                             <td>${assignment.role.name}</td>
                             <td class="action-column">
-                                <a href="#" class="btn btn-default" data-toggle="modal" data-target="#update-existing-dialog" data-user-id="${assignment.user.getID()}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}"><i class="fa fa-pencil"></i></a>
-                                <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-user-id="${assignment.user.getID()}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}"><i class="fa fa-trash"></i></a>
+                                <a href="#" class="btn btn-default" data-toggle="modal" data-target="#update-existing-dialog" data-user-id="${assignment.user.getID()}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Edit role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-pencil"></i></a>
+                                <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-user-id="${assignment.user.getID()}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Remove role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-trash"></i></a>
                             </td>
                         </tr>
                     </#list>
@@ -180,17 +179,85 @@
     </div>
 
     <script>
+        $('[data-target="#add-new-dialog"]').click(function() {
+            $('#create-error').addClass('hidden').text('');
+        });
         $('[data-target="#update-existing-dialog"]').click(function() {
             var userId = $(this).data('user-id');
             var userName = $(this).data('user-name');
             $('#role-update-user-id').val(userId);
             $('#role-update-user-name').val(userName);
+            $('#update-error').addClass('hidden').text('');
         });
         $('[data-target="#delete-dialog"]').click(function() {
             var userId = $(this).data('user-id');
             var userName = $(this).data('user-name');
             $('#delete-role-user-id').val(userId);
             $('#delete-role-user-name').text(userName);
+            $('#delete-error').addClass('hidden').text('');
+        });
+
+        $('#create-form').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                method: 'POST',
+                url: '${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user',
+                data: formData,
+                success: function() {
+                    window.location.href = '${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}';
+                },
+                error: function(xhr) {
+                    var $error = $('#create-error').removeClass('hidden');
+                    if (xhr.status === 422) {
+                        $error.text(xhr.responseText);
+                    } else {
+                        $error.text('An error occurred. Please contact your system administrator.');
+                    }
+                }
+            });
+        });
+
+        $('#update-form').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                method: 'POST',
+                url: '${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user/update',
+                data: formData,
+                success: function() {
+                    window.location.href = '${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}';
+                },
+                error: function(xhr) {
+                    var $error = $('#update-error').removeClass('hidden');
+                    if (xhr.status === 422) {
+                        $error.text(xhr.responseText);
+                    } else {
+                        $error.text('An error occurred. Please contact your system administrator.');
+                    }
+                }
+            });
+        });
+
+        $('#delete-form').submit(function(event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                method: 'POST',
+                url: '${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}/user/delete',
+                data: formData,
+                success: function() {
+                    window.location.href = '${springMacroRequestContext.getContextPath()}/admin/schools/${school.getID()}';
+                },
+                error: function(xhr) {
+                    var $error = $('#delete-error').removeClass('hidden');
+                    if (xhr.status === 422) {
+                        $error.text(xhr.responseText);
+                    } else {
+                        $error.text('An error occurred. Please contact your system administrator.');
+                    }
+                }
+            });
         });
 
         $("#new-user-name").autocomplete({

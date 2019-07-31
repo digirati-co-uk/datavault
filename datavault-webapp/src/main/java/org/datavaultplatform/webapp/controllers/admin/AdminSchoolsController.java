@@ -1,5 +1,6 @@
 package org.datavaultplatform.webapp.controllers.admin;
 
+import org.apache.commons.lang.StringUtils;
 import org.datavaultplatform.common.model.Group;
 import org.datavaultplatform.common.model.User;
 import org.datavaultplatform.webapp.exception.EntityNotFoundException;
@@ -8,10 +9,10 @@ import org.datavaultplatform.webapp.services.RestService;
 import org.datavaultplatform.webapp.services.UserLookupService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,15 +70,25 @@ public class AdminSchoolsController {
     }
 
     @PostMapping("/admin/schools/{school}/user")
-    public String addNewRoleAssignment(@PathVariable("school") String schoolId,
-                                       @RequestParam("user") String userId,
-                                       @RequestParam("role") String roleId,
-                                       RedirectAttributes redirectAttributes) {
+    public ResponseEntity addNewRoleAssignment(@PathVariable("school") String schoolId,
+                                               @RequestParam("user") String userId,
+                                               @RequestParam("role") String roleId) {
+
+        if (StringUtils.isEmpty(userId)) {
+            logger.debug("Attempted to add a role assignment without specifying the user");
+            return validationFailed("Please specify a user.");
+
+        } else if (StringUtils.isEmpty(roleId)) {
+            logger.debug("Attempted to add a role assignment without specifying the role");
+            return validationFailed("Please specify a role.");
+        }
 
         Optional<Group> school = getGroup(schoolId);
         Optional<User> user = getUser(userId);
         Optional<Role> role = getRole(roleId);
 
+        // TODO validate that it's a school role
+        // TODO validate that the user is not IS Admin
         if (!school.isPresent()) {
             logger.error("Attempted to add a new school role assignment to group {} but no such group was found",
                     schoolId);
@@ -89,31 +100,43 @@ public class AdminSchoolsController {
             throw new EntityNotFoundException(Role.class, roleId);
 
         } else if (!user.isPresent()) {
-            logger.info("Attempted to add a new school role assignment to user {} but no such user was found", userId);
-            redirectAttributes.addFlashAttribute("error", "Could not find user with ID=" + userId);
+            logger.debug("Attempted to add a new school role assignment to user {} but no such user was found", userId);
+            return validationFailed("Could not find user with ID=" + userId);
 
         } else if (getRoleAssignment(schoolId, userId).isPresent()) {
-            logger.info("Attempted to add a new school role assignment for user {} and school {} when one already exists",
+            logger.debug("Attempted to add a new school role assignment for user {} and school {} when one already exists",
                     userId,
                     schoolId);
-            redirectAttributes.addFlashAttribute("error", "User " + userId + " already has a role assigned to them.");
-
-        } else {
-            logger.info("Adding new school role assignment: [userId={},groupId={},roleId={}]",
-                    userId,
-                    schoolId,
-                    roleId);
-            RoleAssignment newRoleAssignment = new RoleAssignment(role.get(), user.get(), school.get());
-            createNewRoleAssignment(newRoleAssignment);
+            return validationFailed("User " + userId + " already has a role assigned to them.");
         }
 
-        return "redirect:/admin/schools/" + schoolId;
+        logger.info("Adding new school role assignment: [userId={},groupId={},roleId={}]",
+                userId,
+                schoolId,
+                roleId);
+        RoleAssignment newRoleAssignment = new RoleAssignment(role.get(), user.get(), school.get());
+        createNewRoleAssignment(newRoleAssignment);
+
+        return ResponseEntity.ok().build();
+    }
+
+    private ResponseEntity validationFailed(String message) {
+        return ResponseEntity.status(422).body(message);
     }
 
     @PostMapping("/admin/schools/{school}/user/update")
-    public String updateExistingRoleAssignment(@PathVariable("school") String schoolId,
+    public ResponseEntity updateExistingRoleAssignment(@PathVariable("school") String schoolId,
                                                @RequestParam("user") String userId,
                                                @RequestParam("role") String roleId) {
+
+        if (StringUtils.isEmpty(userId)) {
+            logger.debug("Attempted to add a role assignment without specifying the user");
+            return validationFailed("Please specify a user.");
+
+        } else if (StringUtils.isEmpty(roleId)) {
+            logger.debug("Attempted to add a role assignment without specifying the role");
+            return validationFailed("Please specify a role.");
+        }
 
         Optional<Role> role = getRole(roleId);
         Optional<RoleAssignment> userRoleAssignment = getRoleAssignment(schoolId, userId);
@@ -136,12 +159,17 @@ public class AdminSchoolsController {
                 roleId);
         updateRoleAssignment(userRoleAssignment.get(), role.get());
 
-        return "redirect:/admin/schools/" + schoolId;
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/admin/schools/{school}/user/delete")
-    public String deleteRoleAssignment(@PathVariable("school") String schoolId,
+    public ResponseEntity deleteRoleAssignment(@PathVariable("school") String schoolId,
                                        @RequestParam("user") String userId) {
+
+        if (StringUtils.isEmpty(userId)) {
+            logger.debug("Attempted to add a role assignment without specifying the user");
+            return validationFailed("Please specify a user.");
+        }
 
         Optional<RoleAssignment> userRoleAssignment = getRoleAssignment(schoolId, userId);
         if (!userRoleAssignment.isPresent()) {
@@ -154,7 +182,7 @@ public class AdminSchoolsController {
         logger.info("Deleting school role assignment: [userId={},groupId={}]", userId, schoolId);
         deleteRoleAssignment(userRoleAssignment.get());
 
-        return "redirect:/admin/schools/" + schoolId;
+        return ResponseEntity.ok().build();
     }
 
     private List<Role> getRoles() {
