@@ -44,6 +44,11 @@
         <property name="metaDir" value="${metaDir}"/>
     </bean>
 
+    <bean id="permissionsService" class="org.datavaultplatform.broker.services.PermissionsService">
+        <property name="permissionDao" ref="permissionDAO" />
+        <property name="roleDao" ref="roleDAO" />
+    </bean>
+
     <bean id="eventService" class="org.datavaultplatform.broker.services.EventService">
         <property name="eventDAO" ref="eventDAO" />
     </bean>
@@ -235,6 +240,14 @@
     </bean>
 
     <bean id="userDAO" class="org.datavaultplatform.common.model.dao.UserDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+    <bean id="roleDAO" class="org.datavaultplatform.common.model.dao.RoleDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+
+    <bean id="permissionDAO" class="org.datavaultplatform.common.model.dao.PermissionDAOImpl">
         <property name="sessionFactory" ref="sessionFactory" />
     </bean>
 

@@ -100,10 +100,16 @@
         <div class="col-xs-6 col-md-4">
             <div class="panel panel-success">
                 <div class="panel-heading">
-                    <h3 class="panel-title">Review</h3>
+                    <h3 class="panel-title">Roles</h3>
                 </div>
                 <div class="panel-body">
-                    <h1 class="text-center"><a href="#"><span class="glyphicon glyphicon-list-alt"></span> ${reviewcount}</a></h1>
+                    <h1 class="text-center">
+                        <a href="${springMacroRequestContext.getContextPath()}/admin/roles">
+                            <!-- TODO this hack should be changed to show fa-user-cog once font-awesome has been upgrade to version 5 -->
+                            <i style="mask: url('${springMacroRequestContext.getContextPath()}/resources/theme/images/user-cog-solid.svg') no-repeat center; width: 1em; height: 1em; display: inline-block; background-color: rgb(52, 109, 191);"></i>
+                            <span style="vertical-align: top;">${rolecount}</span>
+                        </a>
+                    </h1>
                 </div>
             </div>
         </div>
