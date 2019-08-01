@@ -17,6 +17,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.RestTemplate;
 
+import javax.management.relation.Role;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -566,6 +567,10 @@ public class RestService {
         return post(brokerURL + "/permissions/role", RoleModel.class, role).getBody();
     }
 
+    public RoleAssignment createRoleAssignment(RoleAssignment roleAssignment) {
+        return post(brokerURL + "/permissions/roleAssignment", RoleAssignment.class, roleAssignment).getBody();
+    }
+
     public List<PermissionModel> getSchoolPermissions() {
         return Arrays.asList(get(brokerURL + "/permissions/school", PermissionModel[].class).getBody());
     }
@@ -586,12 +591,28 @@ public class RestService {
         return Arrays.asList(get(brokerURL + "/permissions/roles/readOnly", RoleModel[].class).getBody());
     }
 
+    public List<RoleAssignment> getRoleAssignmentsForSchool(String schoolId) {
+        return Arrays.asList(get(brokerURL + "/permissions/roleAssignments/school/" + schoolId, RoleAssignment[].class).getBody());
+    }
+
+    public List<RoleAssignment> getRoleAssignmentsForVault(String vaultId) {
+        return Arrays.asList(get(brokerURL + "/permissions/roleAssignments/vault/" + vaultId, RoleAssignment[].class).getBody());
+    }
+
     public RoleModel updateRole(RoleModel role) {
         return put(brokerURL + "/permissions/role", RoleModel.class, role).getBody();
     }
 
+    public RoleAssignment updateRoleAssignment(RoleAssignment roleAssignment) {
+        return put(brokerURL + "/permissions/roleAssignment", RoleAssignment.class, roleAssignment).getBody();
+    }
+
     public void deleteRole(Long roleId) {
         delete(brokerURL + "/permissions/role/" + roleId, Void.class);
+    }
+
+    public void deleteRoleAssignment(Long roleAssignmentId) {
+        delete(brokerURL + "/permissions/roleAssignment/" + roleAssignmentId, Void.class);
     }
 
 }
