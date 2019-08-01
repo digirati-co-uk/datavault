@@ -124,6 +124,10 @@
         <property name="restService" ref="restService" />
     </bean>
 
+    <bean id="adminRolesController" class="org.datavaultplatform.webapp.controllers.admin.AdminRolesController">
+        <property name="restService" ref="restService" />
+    </bean>
+
     <bean id="adminSchoolsController" class="org.datavaultplatform.webapp.controllers.admin.AdminSchoolsController">
         <property name="restService" ref="restService" />
         <property name="userLookupService" ref="userLookupService" />
@@ -183,7 +187,7 @@
         <property name="restService" ref="restService" />
         <property name="ldapService" ref="ldapService" />
     </bean>
-    
+
     <bean id="authSuccessHandler" class="org.datavaultplatform.webapp.authentication.AuthenticationSuccess">
         <property name="restService" ref="restService" />
     </bean>
