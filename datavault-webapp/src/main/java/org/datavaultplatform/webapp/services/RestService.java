@@ -583,6 +583,10 @@ public class RestService {
         return Optional.ofNullable(get(brokerURL + "/permissions/role/" + id, RoleModel.class).getBody());
     }
 
+    public RoleModel getIsAdmin() {
+        return get(brokerURL + "/permissions/role/isAdmin", RoleModel.class).getBody();
+    }
+
     public List<RoleModel> getEditableRoles() {
         return Arrays.asList(get(brokerURL + "/permissions/roles", RoleModel[].class).getBody());
     }
@@ -591,12 +595,28 @@ public class RestService {
         return Arrays.asList(get(brokerURL + "/permissions/roles/readOnly", RoleModel[].class).getBody());
     }
 
+    public List<RoleModel> getSchoolRoles() {
+        return Arrays.asList(get(brokerURL + "/permissions/roles/school", RoleModel[].class).getBody());
+    }
+
+    public List<RoleModel> getVaultRoles() {
+        return Arrays.asList(get(brokerURL + "/permissions/roles/vault", RoleModel[].class).getBody());
+    }
+
+    public Optional<RoleAssignment> getRoleAssignment(Long id) {
+        return Optional.ofNullable(get(brokerURL + "/permissions/roleAssignment/" + id, RoleAssignment.class).getBody());
+    }
+
     public List<RoleAssignment> getRoleAssignmentsForSchool(String schoolId) {
         return Arrays.asList(get(brokerURL + "/permissions/roleAssignments/school/" + schoolId, RoleAssignment[].class).getBody());
     }
 
     public List<RoleAssignment> getRoleAssignmentsForVault(String vaultId) {
         return Arrays.asList(get(brokerURL + "/permissions/roleAssignments/vault/" + vaultId, RoleAssignment[].class).getBody());
+    }
+
+    public List<RoleAssignment> getRoleAssignmentsForUser(String userId) {
+        return Arrays.asList(get(brokerURL + "/permissions/roleAssignments/user/" + userId, RoleAssignment[].class).getBody());
     }
 
     public RoleModel updateRole(RoleModel role) {

@@ -91,7 +91,7 @@
                             </div>
                         </div>
                     </div>
-                    <input type="hidden" id="role-update-user-id" name="user"/>
+                    <input type="hidden" id="role-update-assignment-id" name="assignment"/>
                     <input type="hidden" id="submitAction" name="action" value="submit"/>
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                     <div class="modal-footer">
@@ -115,7 +115,7 @@
                     <div class="modal-body">
                         <label>Are you sure you want to remove the role assignment for user <span id="delete-role-user-name"></span>?</label>
                     </div>
-                    <input type="hidden" id="delete-role-user-id" name="user"/>
+                    <input type="hidden" id="delete-role-assignment-id" name="assignment"/>
                     <input type="hidden" id="submitAction" name="action" value="submit"/>
                     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                     <div class="modal-footer">
@@ -156,8 +156,8 @@
                             <td>${assignment.user.firstname} ${assignment.user.lastname}</td>
                             <td>${assignment.role.name}</td>
                             <td class="action-column">
-                                <a href="#" class="btn btn-default" data-toggle="modal" data-target="#update-existing-dialog" data-user-id="${assignment.user.getID()}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Edit role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-pencil"></i></a>
-                                <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-user-id="${assignment.user.getID()}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Remove role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-trash"></i></a>
+                                <a href="#" class="btn btn-default" data-toggle="modal" data-target="#update-existing-dialog" data-assignment-id="${assignment.id}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Edit role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-pencil"></i></a>
+                                <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-assignment-id="${assignment.id}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Remove role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-trash"></i></a>
                             </td>
                         </tr>
                     </#list>
@@ -183,16 +183,16 @@
             $('#create-error').addClass('hidden').text('');
         });
         $('[data-target="#update-existing-dialog"]').click(function() {
-            var userId = $(this).data('user-id');
+            var assignmentId = $(this).data('assignment-id');
             var userName = $(this).data('user-name');
-            $('#role-update-user-id').val(userId);
+            $('#role-update-assignment-id').val(assignmentId);
             $('#role-update-user-name').val(userName);
             $('#update-error').addClass('hidden').text('');
         });
         $('[data-target="#delete-dialog"]').click(function() {
-            var userId = $(this).data('user-id');
+            var assignmentId = $(this).data('assignment-id');
             var userName = $(this).data('user-name');
-            $('#delete-role-user-id').val(userId);
+            $('#delete-role-assignment-id').val(assignmentId);
             $('#delete-role-user-name').text(userName);
             $('#delete-error').addClass('hidden').text('');
         });

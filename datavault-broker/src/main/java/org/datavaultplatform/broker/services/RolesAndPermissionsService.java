@@ -11,6 +11,7 @@ import org.datavaultplatform.common.util.RoleUtils;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
@@ -109,6 +110,10 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
         return roleDao.find(id);
     }
 
+    public RoleModel getIsAdmin() {
+        return roleDao.getIsAdmin();
+    }
+
     public List<RoleModel> getEditableRoles() {
         return roleDao.findAll().stream()
                 .filter(role -> role.getType().isCustomCreatable())
@@ -119,12 +124,28 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
         return Collections.singletonList(roleDao.getDataOwner());
     }
 
+    public List<RoleModel> getSchoolRoles() {
+        return new ArrayList<>(roleDao.findAll(RoleType.SCHOOL));
+    }
+
+    public List<RoleModel> getVaultRoles() {
+        return new ArrayList<>(roleDao.findAll(RoleType.VAULT));
+    }
+
+    public RoleAssignment getRoleAssignment(long id) {
+        return roleAssignmentDao.find(id);
+    }
+
     public List<RoleAssignment> getRoleAssignmentsForSchool(String schoolId) {
         return roleAssignmentDao.findBySchoolId(schoolId);
     }
 
     public List<RoleAssignment> getRoleAssignmentsForVault(String vaultId) {
         return roleAssignmentDao.findByVaultId(vaultId);
+    }
+
+    public List<RoleAssignment> getRoleAssignmentsForUser(String userId) {
+        return roleAssignmentDao.findByUserId(userId);
     }
 
     public RoleModel updateRole(RoleModel role) {

@@ -88,6 +88,18 @@ public class RolesAndPermissionsController {
     }
 
     @ApiMethod(
+            path = "/permissions/role/isAdmin",
+            verb = ApiVerb.GET,
+            description = "Gets all roles which can be edited",
+            produces = { MediaType.APPLICATION_JSON_VALUE },
+            responsestatuscode = "200 - OK"
+    )
+    @GetMapping("/role/isAdmin")
+    public RoleModel getIsAdmin() {
+        return rolesAndPermissionsService.getIsAdmin();
+    }
+
+    @ApiMethod(
             path = "/permissions/roles",
             verb = ApiVerb.GET,
             description = "Gets all roles which can be edited",
@@ -114,6 +126,45 @@ public class RolesAndPermissionsController {
     }
 
     @ApiMethod(
+            path = "/permissions/roles/school",
+            verb = ApiVerb.GET,
+            description = "Gets all school roles",
+            produces = { MediaType.APPLICATION_JSON_VALUE },
+            responsestatuscode = "200 - OK"
+    )
+    @GetMapping("/roles/school")
+    public RoleModel[] getAllSchoolRoles() {
+        List<RoleModel> editableRoles = rolesAndPermissionsService.getSchoolRoles();
+        return editableRoles.toArray(new RoleModel[0]);
+    }
+
+    @ApiMethod(
+            path = "/permissions/roles/vault",
+            verb = ApiVerb.GET,
+            description = "Gets all vault roles",
+            produces = { MediaType.APPLICATION_JSON_VALUE },
+            responsestatuscode = "200 - OK"
+    )
+    @GetMapping("/roles/vault")
+    public RoleModel[] getAllVaultRoles() {
+        List<RoleModel> editableRoles = rolesAndPermissionsService.getVaultRoles();
+        return editableRoles.toArray(new RoleModel[0]);
+    }
+
+    @ApiMethod(
+            path = "/permissions/roleAssignments/school/{assignmentId}",
+            verb = ApiVerb.GET,
+            description = "Gets a specified role assignment",
+            produces = { MediaType.APPLICATION_JSON_VALUE },
+            responsestatuscode = "200 - OK"
+    )
+    @GetMapping("/roleAssignment/{assignmentId}")
+    public RoleAssignment getRoleAssignment(
+            @ApiPathParam(name = "Role ID", description = "The ID of the school to get role assignments for") @PathVariable("assignmentId") Long assignmentId) {
+        return rolesAndPermissionsService.getRoleAssignment(assignmentId);
+    }
+
+    @ApiMethod(
             path = "/permissions/roleAssignments/school/{schoolId}",
             verb = ApiVerb.GET,
             description = "Gets all role assignments for a given school",
@@ -136,8 +187,22 @@ public class RolesAndPermissionsController {
     )
     @GetMapping("/roleAssignments/vault/{vaultId}")
     public RoleAssignment[] getRoleAssignmentsForVault(
-            @ApiPathParam(name = "Role ID", description = "The ID of the school to get role assignments for") @PathVariable("vaultId") String vaultId) {
+            @ApiPathParam(name = "Vault ID", description = "The ID of the vault to get role assignments for") @PathVariable("vaultId") String vaultId) {
         List<RoleAssignment> schoolRoleAssignments = rolesAndPermissionsService.getRoleAssignmentsForVault(vaultId);
+        return schoolRoleAssignments.toArray(new RoleAssignment[0]);
+    }
+
+    @ApiMethod(
+            path = "/permissions/roleAssignments/user/{userId}",
+            verb = ApiVerb.GET,
+            description = "Gets all role assignments for a given school",
+            produces = { MediaType.APPLICATION_JSON_VALUE },
+            responsestatuscode = "200 - OK"
+    )
+    @GetMapping("/roleAssignments/user/{userId}")
+    public RoleAssignment[] getRoleAssignmentsForUser(
+            @ApiPathParam(name = "User ID", description = "The ID of the user to get role assignments for") @PathVariable("userId") String userId) {
+        List<RoleAssignment> schoolRoleAssignments = rolesAndPermissionsService.getRoleAssignmentsForUser(userId);
         return schoolRoleAssignments.toArray(new RoleAssignment[0]);
     }
 
