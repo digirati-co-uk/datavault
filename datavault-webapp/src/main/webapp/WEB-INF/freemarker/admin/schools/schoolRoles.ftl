@@ -10,6 +10,14 @@
         #role-assignments {
             padding: 0 2em 0 0;
         }
+        #role-filter-toggle {
+            cursor: pointer;
+        }
+        #role-filter-panel {
+            position: absolute;
+            padding: 1em;
+            background-color: #ebebeb;
+        }
         .action-column {
             width: 100px;
             text-align: center;
@@ -141,28 +149,40 @@
             <a href="#" data-toggle="modal" data-target="#add-new-dialog">+ Add new user to school</a>
         </div>
 
-        <div id="role-assignments" class="table-responsive col-md-8">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>User</th>
-                        <th>Role</th><!-- TODO need to add ordering on this -->
-                        <th class="action-column">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <#list roleAssignments as assignment>
+        <div class="col-md-8" id="role-assignments">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
                         <tr>
-                            <td>${assignment.user.firstname} ${assignment.user.lastname}</td>
-                            <td>${assignment.role.name}</td>
-                            <td class="action-column">
-                                <a href="#" class="btn btn-default" data-toggle="modal" data-target="#update-existing-dialog" data-assignment-id="${assignment.id}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Edit role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-pencil"></i></a>
-                                <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-assignment-id="${assignment.id}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Remove role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-trash"></i></a>
-                            </td>
+                            <th>User</th>
+                            <th>
+                                <span id="role-filter-toggle">Role <i class="filter-toggle-icon fa fa-caret-down"></i></span>
+                                <div id="role-filter-panel" class="hidden">
+                                    <#list roles as role>
+                                        <div>
+                                            <input type="checkbox" id="role-filter-${role.id}" name="role-filter" value="${role.name}" />
+                                            <label for="role-filter-${role.id}">${role.name}</label>
+                                        </div>
+                                    </#list>
+                                </div>
+                            </th>
+                            <th class="action-column">Actions</th>
                         </tr>
-                    </#list>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        <#list roleAssignments as assignment>
+                            <tr>
+                                <td>${assignment.user.firstname} ${assignment.user.lastname}</td>
+                                <td class="role-column">${assignment.role.name}</td>
+                                <td class="action-column">
+                                    <a href="#" class="btn btn-default" data-toggle="modal" data-target="#update-existing-dialog" data-assignment-id="${assignment.id}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Edit role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-pencil"></i></a>
+                                    <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-assignment-id="${assignment.id}" data-user-name="${assignment.user.firstname} ${assignment.user.lastname}" title="Remove role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i class="fa fa-trash"></i></a>
+                                </td>
+                            </tr>
+                        </#list>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
         <div id="role-definitions" class="col-md-4">
@@ -179,6 +199,20 @@
     </div>
 
     <script>
+        $('#role-filter-toggle').click(function() {
+            $('.filter-toggle-icon').toggleClass('fa-caret-down').toggleClass('fa-caret-up');
+            $('#role-filter-panel').toggleClass('hidden');
+        });
+        $('[name="role-filter"]').on('change', function() {
+            var allValues = [];
+            $('[name="role-filter"]:checked').each(function() {
+                allValues.push($(this).val());
+            });
+            $('#role-assignments table tbody tr').filter(function() {
+                $(this).toggle(allValues.length === 0 || allValues.includes($(this).find('.role-column').text()));
+            });
+        });
+
         $('[data-target="#add-new-dialog"]').click(function() {
             $('#create-error').addClass('hidden').text('');
         });
