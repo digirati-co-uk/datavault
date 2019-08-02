@@ -55,7 +55,7 @@ public class UserLookupService {
 
             String[] names = attributes.get("cn").split(" "); attributes.remove("cn");
 
-            logger.info("Adding user " + uun + " - " + names[0] + " " + names[1]);
+            logger.info("Adding user {} - {} {}", uun, names[0], names[1]);
             User newUser = new User();
             newUser.setFirstname(names[0]);
             newUser.setLastname(names[1]);

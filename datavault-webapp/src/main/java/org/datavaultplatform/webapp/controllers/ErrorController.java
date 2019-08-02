@@ -28,7 +28,7 @@ class ErrorController {
         Throwable throwable = (Throwable) request.getAttribute("javax.servlet.error.exception");
         String exceptionMessage = getExceptionMessage(throwable, statusCode, response);
 
-        logger.error("An error occurred: " + exceptionMessage, throwable);
+        logger.error("An error occurred: {}", exceptionMessage, throwable);
 
         String requestUri = (String) request.getAttribute("javax.servlet.error.request_uri");
         if (requestUri == null) {
