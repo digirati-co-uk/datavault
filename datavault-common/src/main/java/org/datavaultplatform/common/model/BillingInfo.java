@@ -22,6 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 @Table(name="BillingInfo")
 public class BillingInfo {
 
+     
     @Id
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "uuid2")
@@ -54,7 +55,7 @@ public class BillingInfo {
     private String school;
 	
 	@OneToOne
-	@JoinColumn(name="vaultID", nullable = false)
+	@JoinColumn(name="vaultID")
     private Vault vault;
     	 
    

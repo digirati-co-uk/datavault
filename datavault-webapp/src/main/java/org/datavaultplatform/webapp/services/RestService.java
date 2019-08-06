@@ -577,6 +577,11 @@ public class RestService {
         delete(brokerURL + "/admin/deposits/" + depositId, String.class);
     }
 
+	public BillingInformation updateBillingInfo(String vaultId,BillingInformation billingInfo) {
+	   	HttpEntity<?> response = post(brokerURL + "/admin/billing/" + vaultId+ "/updateBilling" , BillingInformation.class,billingInfo);
+	    return (BillingInformation)response.getBody();
+    }
+
     public RoleModel createRole(RoleModel role) {
         return post(brokerURL + "/permissions/role", RoleModel.class, role).getBody();
     }
