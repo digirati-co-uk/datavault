@@ -5,6 +5,7 @@
         <groupId>datavault</groupId>
         <artifactId>datavault</artifactId>
         <version>1.0-SNAPSHOT</version>
+        <relativePath>../</relativePath>
     </parent>
     <artifactId>datavault-worker</artifactId>
     <packaging>jar</packaging>

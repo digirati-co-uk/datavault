@@ -16,7 +16,7 @@ public interface VaultDAO {
 
     public Vault findById(String Id);
 
-    public List<Vault> search(String query, String sort, String order, String offset, String maxResult);
+    public List<Vault> search(String nquery, String sort, String order, String offset, String maxResult);
 
     public int count();
 
