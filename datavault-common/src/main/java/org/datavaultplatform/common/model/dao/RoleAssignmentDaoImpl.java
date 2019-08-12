@@ -5,6 +5,7 @@ import org.datavaultplatform.common.model.RoleAssignment;
 import org.datavaultplatform.common.model.User;
 import org.datavaultplatform.common.model.Vault;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -123,5 +124,19 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
         session.delete(roleAssignment);
         tx.commit();
         session.close();
+    }
+
+    @Override
+    public long count(Long id) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            Query query = session.createQuery("SELECT COUNT(*) FROM RoleAssignment ra WHERE ra.role = :role");
+            query.setLong("role", id);
+
+            return (Long) query.uniqueResult();
+        } finally {
+           if (session != null) session.close();
+        }
     }
 }

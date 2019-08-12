@@ -10,6 +10,8 @@ public interface RoleAssignmentDAO {
 
     void store(RoleAssignment roleAssignment);
 
+    long count(Long id);
+
     RoleAssignment find(Long id);
 
     List<RoleAssignment> findAll();

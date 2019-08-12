@@ -635,4 +635,8 @@ public class RestService {
         delete(brokerURL + "/permissions/roleAssignment/" + roleAssignmentId, Void.class);
     }
 
+    public int getUsersCount(long roleId) {
+        return get(brokerURL + "/permissions/role/" + roleId + "/user-count", Integer.class).getBody();
+    }
+
 }

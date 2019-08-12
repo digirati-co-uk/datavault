@@ -160,21 +160,20 @@ public class AdminRolesController {
 
     @PostMapping("/admin/roles/delete")
     public ResponseEntity deleteRole(@RequestParam("id") long roleId) {
+        return restService.getRole(roleId)
+                .map(role -> {
+                    long associatedUsers = restService.getUsersCount(roleId);
+                    if (associatedUsers > 0) {
+                        logger.warn("Unable to delete a role with associated users [id={}]", roleId);
+                        return validationFailed("Can't delete a role that has users");
+                    }
 
-        logger.debug("Preparing to delete role with ID={}", roleId);
-        Optional<RoleModel> role = restService.getRole(roleId);
-        if (!role.isPresent()) {
-            logger.error("Could not delete role with ID={} - no such role found", roleId);
-            return validationFailed("Role does not exist Role Id: " + roleId);
+                    logger.info("Attempting to delete role [id={}]", roleId);
+                    restService.deleteRole(roleId);
 
-        } else if (role.get().getAssignedUserCount() > 0) {
-            logger.debug("Could not delete role with ID={} - users are still assigned to the role", roleId);
-            return validationFailed("Can't delete a role that has users");
-        }
-
-        logger.info("Attempting to delete role with ID={}", roleId);
-        restService.deleteRole(roleId);
-        return ResponseEntity.ok().build();
+                    return ResponseEntity.ok().build();
+                })
+                .orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping(value = "/admin/roles/{id}", produces = "application/json")

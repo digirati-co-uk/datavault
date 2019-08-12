@@ -182,4 +182,8 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
         }
         roleAssignmentDao.delete(roleAssignmentId);
     }
+
+    public long getUserCount(long roleId) {
+        return roleAssignmentDao.count(roleId);
+    }
 }

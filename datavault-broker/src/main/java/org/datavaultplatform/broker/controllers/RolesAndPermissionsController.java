@@ -24,6 +24,17 @@ public class RolesAndPermissionsController {
     }
 
     @ApiMethod(
+            path = "/role/{id}/user-count",
+            verb = ApiVerb.GET,
+            description = "Get the count of users associated to a given role",
+            produces = {MediaType.TEXT_PLAIN_VALUE}
+    )
+    @GetMapping("/role/{roleId}/user-count")
+    public long getUserCount(@PathVariable("roleId") @ApiPathParam(name = "Role ID", description = "The primary key of the role") long roleId) {
+        return rolesAndPermissionsService.getUserCount(roleId);
+    }
+
+    @ApiMethod(
             path = "/permissions/role",
             verb = ApiVerb.POST,
             description = "Create a new DataVault Role",
