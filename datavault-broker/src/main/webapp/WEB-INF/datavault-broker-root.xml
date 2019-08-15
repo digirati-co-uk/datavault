@@ -41,6 +41,10 @@
     <bean id="vaultsService" class="org.datavaultplatform.broker.services.VaultsService">
         <property name="vaultDAO" ref="vaultDAO" />
     </bean>
+    
+    <bean id="billingService" class="org.datavaultplatform.broker.services.BillingService">
+        <property name="billingDAO" ref="billingDAO" />
+    </bean>
 
     <bean id="depositsService" class="org.datavaultplatform.broker.services.DepositsService">
         <property name="depositDAO" ref="depositDAO" />
@@ -125,7 +129,7 @@
         <property name="depositsService" ref="depositsService" />
         <property name="emailService" ref="emailService" />
     </bean>
-
+    
     <!-- Email -->
 
     <bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
@@ -221,7 +225,7 @@
                 <prop key="hibernate.dialect">org.hibernate.dialect.MySQLDialect</prop>
                 <prop key="hibernate.show_sql">false</prop>
                 <prop key="hibernate.format_sql">false</prop>
-                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="hibernate.hbm2ddl.auto">validate</prop>
                 <prop key="hibernate.enable_lazy_load_no_trans">true</prop>
                 <prop key="hibernate.hbm2ddl.import_files">/import.sql</prop>
             </props>
@@ -248,6 +252,10 @@
     <!-- Data Access Objects -->
 
     <bean id="vaultDAO" class="org.datavaultplatform.common.model.dao.VaultDAOImpl">
+        <property name="sessionFactory" ref="sessionFactory" />
+    </bean>
+    
+    <bean id="billingDAO" class="org.datavaultplatform.common.model.dao.BillingDAOImpl">
         <property name="sessionFactory" ref="sessionFactory" />
     </bean>
 
@@ -314,6 +322,8 @@
     <bean id="dataManagerDAO" class="org.datavaultplatform.common.model.dao.DataManagerDAOImpl">
         <property name="sessionFactory" ref="sessionFactory" />
     </bean>
+    
+   
 
     <!-- Encryption and Harshicorp Vault -->
 
