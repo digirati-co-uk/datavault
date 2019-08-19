@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="Encoding">
+    <file url="file://$PROJECT_DIR$" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datavault-assembly" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datavault-broker" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datavault-common" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datavault-webapp" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/datavault-worker" charset="UTF-8" />
+  </component>
+</project>

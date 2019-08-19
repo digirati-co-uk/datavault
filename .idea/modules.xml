@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/datavault.iml" filepath="$PROJECT_DIR$/.idea/datavault.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datavault-assembly/datavault-assembly.iml" filepath="$PROJECT_DIR$/datavault-assembly/datavault-assembly.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datavault-broker/datavault-broker.iml" filepath="$PROJECT_DIR$/datavault-broker/datavault-broker.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datavault-common/datavault-common.iml" filepath="$PROJECT_DIR$/datavault-common/datavault-common.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datavault-webapp/datavault-webapp.iml" filepath="$PROJECT_DIR$/datavault-webapp/datavault-webapp.iml" />
+      <module fileurl="file://$PROJECT_DIR$/datavault-worker/datavault-worker.iml" filepath="$PROJECT_DIR$/datavault-worker/datavault-worker.iml" />
+    </modules>
+  </component>
+</project>
