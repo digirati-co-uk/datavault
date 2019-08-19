@@ -1,9 +1,6 @@
 package org.datavaultplatform.broker.services;
 
-import org.datavaultplatform.common.model.PermissionModel;
-import org.datavaultplatform.common.model.RoleAssignment;
-import org.datavaultplatform.common.model.RoleModel;
-import org.datavaultplatform.common.model.RoleType;
+import org.datavaultplatform.common.model.*;
 import org.datavaultplatform.common.model.dao.PermissionDAO;
 import org.datavaultplatform.common.model.dao.RoleAssignmentDAO;
 import org.datavaultplatform.common.model.dao.RoleDAO;
@@ -150,6 +147,18 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
 
     public List<RoleAssignment> getRoleAssignmentsForRole(Long roleId) {
         return roleAssignmentDao.findByRoleId(roleId);
+    }
+
+    public boolean hasAdminDashboardPermissions(String userId) {
+        return roleAssignmentDao.findByUserId(userId).stream()
+                .flatMap(roleAssignment -> roleAssignment.getRole().getPermissions().stream())
+                .anyMatch(permissionModel -> permissionModel.getPermission().isDashboardPermission());
+    }
+
+    public boolean hasPermission(String userId, Permission permission) {
+        return roleAssignmentDao.findByUserId(userId).stream()
+                .flatMap(roleAssignment -> roleAssignment.getRole().getPermissions().stream())
+                .anyMatch(permissionModel -> permissionModel.getPermission() == permission);
     }
 
     public RoleModel updateRole(RoleModel role) {
