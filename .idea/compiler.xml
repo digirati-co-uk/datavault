@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="datavault-worker" />
+        <module name="datavault-common" />
+        <module name="datavault-webapp" />
+        <module name="datavault-broker" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="datavault" target="1.5" />
+      <module name="datavault-assembly" target="1.5" />
+      <module name="datavault-broker" target="1.8" />
+      <module name="datavault-common" target="1.8" />
+      <module name="datavault-webapp" target="1.8" />
+      <module name="datavault-worker" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

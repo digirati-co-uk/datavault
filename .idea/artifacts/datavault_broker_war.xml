@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="datavault-broker:war">
+    <output-path>$PROJECT_DIR$/datavault-broker/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>datavault-broker</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="datavault-broker.war">
+      <element id="artifact" artifact-name="datavault-broker:war exploded" />
+    </root>
+  </artifact>
+</component>

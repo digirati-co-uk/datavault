@@ -1,0 +1,14 @@
+<component name="ArtifactManager">
+  <artifact type="war" name="datavault-webapp:war">
+    <output-path>$PROJECT_DIR$/datavault-webapp/target</output-path>
+    <properties id="maven-jee-properties">
+      <options>
+        <module>datavault-webapp</module>
+        <packaging>war</packaging>
+      </options>
+    </properties>
+    <root id="archive" name="datavault-webapp.war">
+      <element id="artifact" artifact-name="datavault-webapp:war exploded" />
+    </root>
+  </artifact>
+</component>

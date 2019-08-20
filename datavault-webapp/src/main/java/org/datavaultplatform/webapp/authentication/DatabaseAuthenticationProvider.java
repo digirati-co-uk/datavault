@@ -1,6 +1,8 @@
 package org.datavaultplatform.webapp.authentication;
 
+import org.datavaultplatform.common.model.RoleAssignment;
 import org.datavaultplatform.common.request.ValidateUser;
+import org.datavaultplatform.webapp.security.ScopedGrantedAuthority;
 import org.datavaultplatform.webapp.model.AdminDashboardPermissionsModel;
 import org.datavaultplatform.webapp.services.PermissionsService;
 import org.datavaultplatform.webapp.services.RestService;
@@ -66,18 +68,30 @@ public class DatabaseAuthenticationProvider implements AuthenticationProvider {
         logger.info("Authentication success for " + name);
 
         List<GrantedAuthority> grantedAuths = new ArrayList<>();
+        List<RoleAssignment> roleAssignments = restService.getRoleAssignmentsForUser(name);
+
+        for (RoleAssignment assignment : roleAssignments) {
+            if (assignment.getVault() != null || assignment.getSchool() != null) {
+                grantedAuths.add(new ScopedGrantedAuthority(assignment));
+            }
+        }
 
         boolean isAdmin = false;
         try{
             isAdmin = restService.isAdmin(new ValidateUser(name, null));
+            if (isAdmin) {
+                grantedAuths.add(new SimpleGrantedAuthority("ROLE_IS_ADMIN"));
+            }
         } catch(Exception e){
             System.err.println("Error when trying to check if user is admin with Broker!");
             e.printStackTrace();
         }
-        if (isAdmin) {
+
+        Collection<GrantedAuthority> adminAuthorities = getAdminAuthorities(authentication);
+        if (!adminAuthorities.isEmpty()) {
             logger.info("Granting user " + name + " ROLE_ADMIN");
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
-            grantedAuths.addAll(getAdminAuthorities(authentication));
+            grantedAuths.addAll(adminAuthorities);
         }
 
         logger.info("Granting user " + name + " ROLE_USER");
