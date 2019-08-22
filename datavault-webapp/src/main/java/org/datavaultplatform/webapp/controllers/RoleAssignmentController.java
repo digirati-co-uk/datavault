@@ -114,8 +114,9 @@ public class RoleAssignmentController {
 
         assignment.setUser(user);
         assignment.setRole(role);
+        rest.createRoleAssignment(assignment);
 
-        return ResponseEntity.ok(rest.createRoleAssignment(assignment));
+        return ResponseEntity.ok().build();
     }
 
 
