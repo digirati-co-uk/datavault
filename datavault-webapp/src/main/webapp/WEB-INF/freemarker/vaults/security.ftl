@@ -108,8 +108,8 @@
                 <input type="hidden" id="submitAction" name="action" value="submit"/>
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-ok">Save</button>
+                    <button type="button" class="btn btn-default btn-cancel" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
                 </div>
             </form>
         </div>
@@ -141,7 +141,8 @@
                     <div class="form-group ui-widget">
                         <label for="new-user-role" class="control-label col-sm-2">Role:</label>
                         <div class="col-sm-10">
-                            <select id="new-user-role" name="role" class="form-control">
+                            <select id="new-user-role" name="role" class="form-control" >
+                                <option hidden value="" selected disabled>Please select</option>
                                 <#list roles as role>
                                     <option value="${role.id}">${role.name}</option>
                                 </#list>
@@ -152,8 +153,8 @@
                 <input type="hidden" id="submitAction" name="action" value="submit"/>
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-ok">Save</button>
+                    <button type="button" class="btn btn-default btn-cancel" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
                 </div>
             </form>
         </div>
@@ -196,8 +197,8 @@
                 <input type="hidden" id="submitAction" name="action" value="submit"/>
                 <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary btn-ok">Save</button>
+                    <button type="button" class="btn btn-default btn-cancel" data-dismiss="modal"><i class="fa fa-times" aria-hidden="true"></i> Cancel</button>
+                    <button type="submit" class="btn btn-primary"><span class="glyphicon glyphicon-floppy-disk"></span> Save</button>
                 </div>
             </form>
         </div>
