@@ -136,7 +136,7 @@ public class AdminController {
                                             @RequestParam(value = "sort", required = false) String sort) throws Exception {
 
         List<DepositInfo> depositResponses = new ArrayList<>();
-        for (Deposit deposit : depositsService.getDeposits(sort)) {
+        for (Deposit deposit : depositsService.getDeposits(sort, userID)) {
             DepositInfo depositInfo = deposit.convertToResponse();
             User depositor = usersService.getUser(depositInfo.getUserID());
             depositInfo.setUserName(depositor.getFirstname() + " " + depositor.getLastname());
@@ -156,7 +156,7 @@ public class AdminController {
     @RequestMapping(value = "/admin/retrieves", method = RequestMethod.GET)
     public List<Retrieve> getRetrievesAll(@RequestHeader(value = "X-UserID", required = true) String userID) throws Exception {
 
-        return retrievesService.getRetrieves();
+        return retrievesService.getRetrieves(userID);
     }
 
     @ApiMethod(
@@ -184,12 +184,12 @@ public class AdminController {
         if (order == null) order = "asc";
         Long recordsTotal = 0L;
         List<VaultInfo> vaultResponses = new ArrayList<>();
-        List<Vault> vaults = vaultsService.getVaults(sort, order,offset, maxResult);
+        List<Vault> vaults = vaultsService.getVaults(userID, sort, order,offset, maxResult);
         if(CollectionUtils.isNotEmpty(vaults)) {
 			for (Vault vault : vaults) {
 				vaultResponses.add(vault.convertToResponse());
 	        }
-	        recordsTotal = vaultsService.getTotalNumberOfVaults();
+	        recordsTotal = vaultsService.getTotalNumberOfVaults(userID);
 	        //Map of project with its size
 	        Map<String, Long> projectSizeMap = vaultsService.getAllProjectsSize();
 	        //update project Size in the response
