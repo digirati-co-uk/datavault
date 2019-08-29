@@ -188,11 +188,6 @@ public class RestService {
         return (BillingInformation)response.getBody();
 	}
 
-    public VaultInfo[] getVaultsListingAll() {
-        HttpEntity<?> response = get(brokerURL + "/admin/vaults", VaultInfo[].class);
-        return (VaultInfo[])response.getBody();
-    }
-
     public VaultsData getVaultsListingAll(String sort, String order, String offset, String maxResult) {
         HttpEntity<?> response = get(brokerURL + "/admin/vaults?sort=" + sort + "&order=" + order+ "&offset=" + offset+ "&maxResult=" + maxResult, VaultsData.class);
         return (VaultsData)response.getBody();
@@ -293,14 +288,6 @@ public class RestService {
         return (Vault)response.getBody();
     }
 
-    public int checkAllVaultRetentionPolicies() {
-        VaultInfo[] vaults = getVaultsListingAll();
-        for (VaultInfo vault : vaults) {
-            get(brokerURL + "/vaults/" + vault.getID() + "/checkretentionpolicy", Vault.class);
-        }
-        return vaults.length;
-    }
-
     public int getRetentionPolicyStatusCount(int status) {
         HttpEntity<?> response = get(brokerURL + "/vaults/retentionpolicycount/" + status, Integer.class);
         return (Integer)response.getBody();
@@ -398,6 +385,11 @@ public class RestService {
 
     public Group[] getGroups() {
         HttpEntity<?> response = get(brokerURL + "/groups", Group[].class);
+        return (Group[])response.getBody();
+    }
+
+    public Group[] getGroupsByScopedPermissions() {
+        HttpEntity<?> response = get(brokerURL + "/groups/byScopedPermissions", Group[].class);
         return (Group[])response.getBody();
     }
 
