@@ -46,19 +46,31 @@
         background-color: #f2dede;
     }
 
+    .form-group {
+        display: block;
+        text-align: left;
+    }
+
     .form-confirm {
         display: flex;
         margin-left: 0px !important;
+        padding-left: 10px;
     }
 
     .form-label {
-        float: left;
+        display: block;
+        text-align: left !important;
     }
 
     .form-input {
-        float: left;
         min-width: 70%;
+        text-align: left !important;
     }
+
+    .checkbox {
+        margin-left: 10px !important;
+    }
+
 
 </style>
 
@@ -81,10 +93,11 @@
                     <h4 class="modal-title" id="orphan-user-title">Transfer Ownership</h4>
                 </div>
                 <div class="modal-body">
+
                     <div class="alert alert-danger hidden error" role="alert"></div>
                     <div id="transfer-inputs">
 
-                        <div class="col-sm-10 form-group ui-widget control-form--checkbox">
+                        <div class="col-sm-10 form-group ui-widget">
                             <label for="new-user-name" class="control-label form-label">New Data Owner</label>
                             <div class="form-input">
                                 <input id="new-user-name" type="text" class="form-control" name="user" value=""/>
