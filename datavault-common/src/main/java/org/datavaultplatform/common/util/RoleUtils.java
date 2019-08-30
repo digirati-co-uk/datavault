@@ -1,5 +1,7 @@
 package org.datavaultplatform.common.util;
 
+import org.datavaultplatform.common.model.RoleAssignment;
+
 public class RoleUtils {
 
     public static final String IS_ADMIN_ROLE_NAME = "IS Admin";
@@ -11,5 +13,9 @@ public class RoleUtils {
 
     public static boolean isReservedRoleName(String roleName) {
         return IS_ADMIN_ROLE_NAME.equalsIgnoreCase(roleName) || DATA_OWNER_ROLE_NAME.equalsIgnoreCase(roleName);
+    }
+
+    public static boolean isDataOwner(RoleAssignment roleAssignment) {
+        return DATA_OWNER_ROLE_NAME.equals(roleAssignment.getRole().getName());
     }
 }
