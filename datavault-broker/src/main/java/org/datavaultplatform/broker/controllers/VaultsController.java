@@ -154,20 +154,18 @@ public class VaultsController {
                                         @PathVariable("vaultId") String vaultId,
                                         @RequestBody TransferVault transfer) {
 
-        User newOwner = usersService.getUser(transfer.getUserId());
-
-        if (newOwner == null) {
-            throw new IllegalStateException("Can't orphan a vault currently");
-        }
-
         Vault vault = vaultsService.getVault(vaultId);
         User currentOwner = vault.getUser();
 
-        vault.setUser(newOwner);
-        vaultsService.saveOrUpdateVault(vault);
+        if (transfer.isOrphaning()) {
+            vaultsService.orphanVault(vault);
+        } else {
+            vaultsService.transferVault(vault, usersService.getUser(transfer.getUserId()), transfer.getReason());
+        }
 
-        Long roleId = transfer.getRoleId();
         if (transfer.isChangingRoles()) {
+            long roleId = transfer.getRoleId();
+
             RoleModel role = permissionsService.getRole(roleId);
             RoleAssignment assignment = new RoleAssignment();
             assignment.setRole(role);
@@ -194,7 +192,7 @@ public class VaultsController {
         List<VaultInfo> vaultResponses = new ArrayList<>();
         Long recordsTotal = 0L;
         Long recordsFiltered = 0L;
-        List<Vault> vaults = vaultsService.search(query, sort, order, offset, maxResult);
+        List<Vault> vaults = vaultsService.search(userID, query, sort, order, offset, maxResult);
         if(CollectionUtils.isNotEmpty(vaults)) {
 			for (Vault vault : vaults) {
 				vaultResponses.add(vault.convertToResponse());
@@ -207,7 +205,7 @@ public class VaultsController {
 	        		vault.setProjectSize(projectSizeMap.get(vault.getProjectId()));
 	        	}
 	        }
-	        recordsTotal = vaultsService.getTotalNumberOfVaults();
+	        recordsTotal = vaultsService.getTotalNumberOfVaults(userID);
 	        recordsFiltered = vaultsService.getTotalNumberOfVaults(query);
         }
         
@@ -226,7 +224,7 @@ public class VaultsController {
                                            @RequestParam(value = "sort", required = false) String sort) throws Exception {
 
         List<DepositInfo> depositResponses = new ArrayList<>();
-        for (Deposit deposit : depositsService.search(query, sort)) {
+        for (Deposit deposit : depositsService.search(query, sort, userID)) {
             depositResponses.add(deposit.convertToResponse());
         }
         return depositResponses;
