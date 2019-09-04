@@ -38,6 +38,10 @@
                 logout-success-url="/auth/login?logout"/>
         <security:expression-handler ref="webSecurityExpressionHandler"/>
 
+        <security:session-management>
+            <security:concurrency-control session-registry-alias="sessionRegistry" expired-url="/auth/login?security" />
+        </security:session-management>
+
 	</security:http>
     <security:authentication-manager>
         <security:authentication-provider ref="databaseAuthenticationProvider"/>

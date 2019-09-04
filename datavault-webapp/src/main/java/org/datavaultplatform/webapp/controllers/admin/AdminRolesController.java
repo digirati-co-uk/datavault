@@ -6,6 +6,7 @@ import org.datavaultplatform.common.model.*;
 import org.datavaultplatform.common.util.RoleUtils;
 import org.datavaultplatform.webapp.exception.EntityNotFoundException;
 import org.datavaultplatform.webapp.model.RoleViewModel;
+import org.datavaultplatform.webapp.services.ForceLogoutService;
 import org.datavaultplatform.webapp.services.RestService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,8 +32,14 @@ public class AdminRolesController {
 
     private RestService restService;
 
+    private ForceLogoutService forceLogoutService;
+
     public void setRestService(RestService restService) {
         this.restService = restService;
+    }
+
+    public void setForceLogoutService(ForceLogoutService forceLogoutService) {
+        this.forceLogoutService = forceLogoutService;
     }
 
     @GetMapping("/admin/roles")
@@ -183,6 +190,7 @@ public class AdminRolesController {
 
         logger.info("Attempting to update role with ID={}", id);
         restService.updateRole(role);
+        forceLogoutService.logoutRole(role.getId());
         return ResponseEntity.ok().build();
     }
 
@@ -237,6 +245,8 @@ public class AdminRolesController {
         newRoleAssignment.setUser(user);
         restService.createRoleAssignment(newRoleAssignment);
 
+        forceLogoutService.logoutUser(userId);
+
         return ResponseEntity.ok().build();
     }
 
@@ -265,11 +275,7 @@ public class AdminRolesController {
         logger.info("Attempting to remove user ID={} from IS Admin role with ID={}", userId, superAdminRole.getId());
         restService.deleteRoleAssignment(roleAssignment.get().getId());
 
-        if (principal.getName().equals(userId)) {
-            // Must logout IS Admin if they just deopped themselves
-            request.logout();
-            // They will be redirected to login by the JS when we return OK.
-        }
+        forceLogoutService.logoutUser(userId);
 
         return ResponseEntity.ok().build();
     }
