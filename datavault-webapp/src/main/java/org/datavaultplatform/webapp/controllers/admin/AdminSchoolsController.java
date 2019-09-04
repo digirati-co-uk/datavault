@@ -267,13 +267,9 @@ public class AdminSchoolsController {
     }
 
     private void updateRoleAssignment(RoleAssignment originalRoleAssignment, RoleModel newRole) {
-        boolean hasReducedPermissions = RoleUtils.hasReducedPermissions(
-                originalRoleAssignment.getRole().getPermissions(), newRole.getPermissions());
         originalRoleAssignment.setRole(newRole);
         restService.updateRoleAssignment(originalRoleAssignment);
-        if (hasReducedPermissions) {
-            forceLogoutService.logoutUser(originalRoleAssignment.getUser().getID());
-        }
+        forceLogoutService.logoutUser(originalRoleAssignment.getUser().getID());
     }
 
     private void deleteRoleAssignment(RoleAssignment toDelete) {

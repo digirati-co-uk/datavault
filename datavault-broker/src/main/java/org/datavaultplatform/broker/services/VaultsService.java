@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.datavaultplatform.common.model.RoleAssignment;
+import org.datavaultplatform.common.model.RoleModel;
 import org.datavaultplatform.common.model.User;
 import org.datavaultplatform.common.model.Vault;
 import org.datavaultplatform.common.model.dao.VaultDAO;
@@ -13,6 +15,12 @@ import org.datavaultplatform.common.retentionpolicy.RetentionPolicy;
 public class VaultsService {
 
     private VaultDAO vaultDAO;
+
+    private RolesAndPermissionsService rolesAndPermissionsService;
+
+    public void setRolesAndPermissionsService(RolesAndPermissionsService rolesAndPermissionsService) {
+        this.rolesAndPermissionsService = rolesAndPermissionsService;
+    }
 
     public List<Vault> getVaults() { return vaultDAO.list(); }
 
@@ -24,6 +32,11 @@ public class VaultsService {
         Date d = new Date();
         vault.setCreationTime(d);
         vaultDAO.save(vault);
+    }
+
+    public void orphanVault(Vault vault) {
+        vault.setUser(null);
+        vaultDAO.update(vault);
     }
     
     public void updateVault(Vault vault) {
@@ -106,5 +119,21 @@ public class VaultsService {
 		}
 		return projectSizeMap;
 	}
-}
 
+    public void transferVault(Vault vault, User newOwner, String reason) {
+        vault.setUser(newOwner);
+        vaultDAO.update(vault);
+
+        RoleModel dataOwnerRole = rolesAndPermissionsService.getDataOwner();
+        rolesAndPermissionsService.getRoleAssignmentsForRole(dataOwnerRole.getId()).stream()
+                .filter(roleAssignment -> vault.equals(roleAssignment.getVault()))
+                .findFirst()
+                .ifPresent(roleAssignment -> rolesAndPermissionsService.deleteRoleAssignment(roleAssignment.getId()));
+
+        RoleAssignment newDataOwnerAssignment = new RoleAssignment();
+        newDataOwnerAssignment.setUser(newOwner);
+        newDataOwnerAssignment.setVault(vault);
+        newDataOwnerAssignment.setRole(dataOwnerRole);
+        rolesAndPermissionsService.createRoleAssignment(newDataOwnerAssignment);
+    }
+}

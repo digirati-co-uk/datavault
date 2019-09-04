@@ -183,7 +183,6 @@ public class AdminRolesController {
             return validationFailed("Cannot change role type with users assigned to the role.");
         }
 
-        boolean hasReducedPermissions = RoleUtils.hasReducedPermissions(role.getPermissions(), selectedPermissions);
         role.setPermissions(selectedPermissions);
         role.setName(name);
         role.setDescription(description);
@@ -191,9 +190,7 @@ public class AdminRolesController {
 
         logger.info("Attempting to update role with ID={}", id);
         restService.updateRole(role);
-        if (hasReducedPermissions) {
-            forceLogoutService.logoutRole(role.getId());
-        }
+        forceLogoutService.logoutRole(role.getId());
         return ResponseEntity.ok().build();
     }
 

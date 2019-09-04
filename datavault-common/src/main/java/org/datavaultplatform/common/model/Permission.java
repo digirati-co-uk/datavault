@@ -3,7 +3,12 @@ package org.datavaultplatform.common.model;
 public enum Permission {
 
     // Vault permissions
-    MANAGE_ROLES("MANAGE_ROLES", PermissionModel.PermissionType.VAULT, "Manage roles", null, false),
+    VIEW_DEPOSITS_AND_RETRIEVES("VIEW_DEPOSITS_AND_RETRIEVES", PermissionModel.PermissionType.VAULT, "View deposits and retrieves", null, false),
+    VIEW_VAULT_METADATA("VIEW_VAULT_METADATA", PermissionModel.PermissionType.VAULT, "View vault metadata", null, false),
+    VIEW_VAULT_ROLES("VIEW_VAULT_ROLES", PermissionModel.PermissionType.VAULT, "View vault roles", null, false),
+    ASSIGN_VAULT_ROLES("ASSIGN_VAULT_ROLES", PermissionModel.PermissionType.VAULT, "Assign vault roles", null, false),
+    VIEW_VAULT_HISTORY("VIEW_VAULT_HISTORY", PermissionModel.PermissionType.VAULT, "View vault history", null, false),
+    CAN_TRANSFER_VAULT_OWNERSHIP("CAN_TRANSFER_VAULT_OWNERSHIP", PermissionModel.PermissionType.VAULT, "Transfer vault ownership", null, false),
 
     // School permissions
     CAN_VIEW_VAULTS_SIZE("CAN_VIEW_VAULTS_SIZE", PermissionModel.PermissionType.SCHOOL, "View school vaults size", "ROLE_ADMIN", true),
@@ -13,6 +18,13 @@ public enum Permission {
     CAN_MANAGE_DEPOSITS("CAN_MANAGE_DEPOSITS", PermissionModel.PermissionType.SCHOOL, "Manage school vault deposits", "ROLE_ADMIN_DEPOSITS", true),
     CAN_VIEW_RETRIEVES("CAN_VIEW_RETRIEVES", PermissionModel.PermissionType.SCHOOL, "View school retrieves", "ROLE_ADMIN_RETRIEVES", true),
     CAN_VIEW_SCHOOL_ROLE_ASSIGNMENTS("CAN_VIEW_SCHOOL_ROLE_ASSIGNMENTS", PermissionModel.PermissionType.SCHOOL, "View school role assignments", "ROLE_ADMIN_SCHOOLS", true),
+    CAN_ORPHAN_SCHOOL_VAULTS("CAN_ORPHAN_SCHOOL_VAULTS", PermissionModel.PermissionType.SCHOOL, "Orphan school vaults", null, false),
+    MANAGE_SCHOOL_VAULT_DEPOSITS("MANAGE_SCHOOL_VAULT_DEPOSITS", PermissionModel.PermissionType.SCHOOL, "Manage school vault deposits and retrieves", null, false),
+    VIEW_SCHOOL_VAULT_METADATA("VIEW_SCHOOL_VAULT_METADATA", PermissionModel.PermissionType.SCHOOL, "View school vault metadata", null, false),
+    VIEW_SCHOOL_VAULT_ROLES("VIEW_SCHOOL_VAULT_ROLES", PermissionModel.PermissionType.SCHOOL, "View school vault roles", null, false),
+    ASSIGN_SCHOOL_VAULT_ROLES("ASSIGN_SCHOOL_VAULT_ROLES", PermissionModel.PermissionType.SCHOOL, "Assign school vault roles", null, false),
+    VIEW_SCHOOL_VAULT_HISTORY("VIEW_SCHOOL_VAULT_HISTORY", PermissionModel.PermissionType.SCHOOL, "View school vault history", null, false),
+    TRANSFER_SCHOOL_VAULT_OWNERSHIP("TRANSFER_SCHOOL_VAULT_OWNERSHIP", PermissionModel.PermissionType.SCHOOL, "Transfer school vault ownership", null, false),
 
     // Admin permissions
     CAN_MANAGE_BILLING_DETAILS("CAN_MANAGE_BILLING_DETAILS", PermissionModel.PermissionType.ADMIN, "Manage billing details", "ROLE_ADMIN_BILLING", true),

@@ -1,38 +1,51 @@
 package org.datavaultplatform.webapp.controllers;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.OptionalLong;
-
+import com.google.common.base.Strings;
+import com.google.common.collect.MoreCollectors;
+import com.google.gson.Gson;
 import org.apache.commons.lang.RandomStringUtils;
+import org.datavaultplatform.common.model.*;
+import org.datavaultplatform.common.request.CreateVault;
 import org.datavaultplatform.common.request.TransferVault;
+import org.datavaultplatform.common.response.DepositInfo;
+import org.datavaultplatform.common.response.VaultInfo;
+import org.datavaultplatform.common.util.RoleUtils;
+import org.datavaultplatform.webapp.exception.ForbiddenException;
 import org.datavaultplatform.webapp.exception.EntityNotFoundException;
 import org.datavaultplatform.webapp.exception.InvalidUunException;
+import org.datavaultplatform.webapp.services.RestService;
 import org.datavaultplatform.webapp.services.UserLookupService;
 import org.hibernate.validator.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.Gson;
-import org.datavaultplatform.common.model.*;
-import org.datavaultplatform.common.request.CreateVault;
-import org.datavaultplatform.common.response.DepositInfo;
-import org.datavaultplatform.common.response.VaultInfo;
-import org.datavaultplatform.webapp.services.RestService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import org.springframework.web.servlet.view.RedirectView;
 
+import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
+import javax.validation.Validator;
 import javax.validation.constraints.AssertTrue;
-import javax.validation.constraints.NotNull;
+import java.security.Principal;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 //@RequestMapping("/vaults")
@@ -65,15 +78,45 @@ public class VaultsController {
         this.userLookupService = userLookupService;
     }
 
+    @PreAuthorize("hasPermission(#vaultId, 'VAULT', 'CAN_TRANSFER_VAULT_OWNERSHIP') or hasPermission(#vaultId, 'GROUP_VAULT', 'TRANSFER_SCHOOL_VAULT_OWNERSHIP')")
     @PostMapping(value = "/vaults/{vaultid}/data-owner/update")
     public ResponseEntity transferOwnership(
             @PathVariable("vaultid") String vaultId,
             @Valid VaultTransferRequest request) {
 
+        if (!request.isOrphaning()) {
+            User newOwner = restService.getUser(request.user);
+            if (newOwner == null) {
+                return ResponseEntity.status(422).body("No such user)");
+            }
+
+            boolean hasVaultRole = restService.getRoleAssignmentsForUser(request.user)
+                    .stream()
+                    .anyMatch(role -> {
+                        Vault vault = role.getVault();
+                        return vault != null && vault.getID().equals(vaultId);
+                    });
+
+            if (hasVaultRole) {
+                return ResponseEntity.status(422).body("User already has a role in this vault");
+            }
+
+            VaultInfo vault = restService.getVault(vaultId);
+            if (vault == null) {
+                throw new EntityNotFoundException(Vault.class, vaultId);
+            }
+
+            String userId = vault.getUserID();
+            if (userId != null && userId.equals(request.user)) {
+                return ResponseEntity.status(422).body("Cannot transfer ownership to the current owner");
+            }
+        }
+
         TransferVault transfer = new TransferVault();
         transfer.setUserId(request.user);
         transfer.setRoleId(request.role);
-        transfer.setChangingRoles(request.confirmed);
+        transfer.setChangingRoles(request.assigningRole);
+        transfer.setOrphaning(request.orphaning);
 
         restService.transferVault(vaultId, transfer);
 
@@ -106,13 +149,25 @@ public class VaultsController {
     }
 
     @RequestMapping(value = "/vaults/{vaultid}", method = RequestMethod.GET)
-    public String getVault(ModelMap model, @PathVariable("vaultid") String vaultID) throws Exception {
+    public String getVault(ModelMap model, @PathVariable("vaultid") String vaultID, Principal principal) throws Exception {
         VaultInfo vault = restService.getVault(vaultID);
 
+        if (!canAccessVault(vault, principal)) {
+            throw new ForbiddenException();
+        }
+
         List<RoleAssignment> roleAssignmentsForVault = restService.getRoleAssignmentsForVault(vaultID);
+        List<RoleAssignment> vaultUsers = roleAssignmentsForVault.stream()
+                .filter(roleAssignment -> !RoleUtils.isDataOwner(roleAssignment))
+                .collect(Collectors.toList());
+        roleAssignmentsForVault.stream()
+                .filter(RoleUtils::isDataOwner)
+                .findFirst()
+                .ifPresent(roleAssignment -> model.addAttribute("dataOwner", roleAssignment));
+
         model.addAttribute("vault", vault);
         model.addAttribute("roles", restService.getVaultRoles());
-        model.addAttribute("roleAssignments", roleAssignmentsForVault);
+        model.addAttribute("roleAssignments", vaultUsers);
         model.addAttribute(restService.getRetentionPolicy(vault.getPolicyID()));
         model.addAttribute(restService.getGroup(vault.getGroupID()));
         
@@ -147,7 +202,15 @@ public class VaultsController {
         
         return "vaults/vault";
     }
-    
+
+    private boolean canAccessVault(VaultInfo vault, Principal principal) {
+        List<RoleAssignment> roleAssignmentsForUser = restService.getRoleAssignmentsForUser(principal.getName());
+        return roleAssignmentsForUser.stream().anyMatch(roleAssignment ->
+                RoleUtils.isISAdmin(roleAssignment)
+                        || RoleUtils.isRoleInVault(roleAssignment, vault.getID())
+                        || (RoleUtils.isRoleInSchool(roleAssignment, vault.getGroupID()) && RoleUtils.hasPermission(roleAssignment, Permission.CAN_MANAGE_VAULTS)));
+    }
+
     @RequestMapping(value = "/vaults/{vaultid}/{userid}", method = RequestMethod.GET)
     public String getVault(ModelMap model, @PathVariable("vaultid") String vaultID,@PathVariable("userid") String userID) throws Exception {
     	model.addAttribute("vaults", restService.getVaultsListingAll(userID));
@@ -236,10 +299,20 @@ public class VaultsController {
     private static class VaultTransferRequest {
         private Long role;
         private String user;
-        private boolean confirmed;
+        private boolean assigningRole;
+        private boolean orphaning;
+        private String reason;
 
-        public void setConfirmed(boolean confirmed) {
-            this.confirmed = confirmed;
+        public void setOrphaning(boolean orphaning) {
+            this.orphaning = orphaning;
+        }
+
+        public boolean isOrphaning() {
+            return orphaning;
+        }
+
+        public void setAssigningRole(boolean assigningRole) {
+            this.assigningRole = assigningRole;
         }
 
         public void setRole(Long role) {
@@ -250,19 +323,35 @@ public class VaultsController {
             this.user = user;
         }
 
-        @NotNull
         public Long getRole() {
             return role;
         }
 
-        @NotNull
-        @NotEmpty
         public String getUser() {
             return user;
         }
 
-        public boolean isConfirmed() {
-            return confirmed;
+        @NotEmpty(message = "Must provide a transfer reason.")
+        public String getReason() {
+            return reason;
+        }
+
+        public void setReason(String reason) {
+            this.reason = reason;
+        }
+
+        public boolean isAssigningRole() {
+            return assigningRole;
+        }
+
+        @AssertTrue(message = "Must select a user.")
+        public boolean isUserSelectionValid() {
+            return orphaning || !Strings.isNullOrEmpty(user);
+        }
+
+        @AssertTrue(message = "Must select a role when assigning a new role.")
+        public boolean isRoleSelectionValid() {
+            return !assigningRole || role != null;
         }
     }
 }

@@ -4,6 +4,7 @@ import org.datavaultplatform.common.model.RoleAssignment;
 import org.datavaultplatform.common.model.RoleModel;
 import org.datavaultplatform.common.model.RoleType;
 import org.datavaultplatform.common.model.User;
+import org.datavaultplatform.common.model.Vault;
 import org.datavaultplatform.webapp.exception.EntityNotFoundException;
 import org.datavaultplatform.webapp.services.RestService;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -30,12 +31,12 @@ public class RoleAssignmentController {
     }
 
     @PostMapping("/security/roles/{roleType}/{target}/user/update")
-    @PreAuthorize("hasPermission(#targetId, #type, 'MANAGE_ROLES')")
+    @PreAuthorize("hasPermission(#targetId, #type, 'ASSIGN_VAULT_ROLES') or hasPermission(#targetId, 'GROUP_VAULT', 'ASSIGN_SCHOOL_VAULT_ROLES')")
     public ResponseEntity updateRoleAssignment(
             @PathVariable("roleType") String type,
             @PathVariable("target") String targetId,
             @Valid @NotNull @RequestParam("assignment") Long assignmentId,
-            @Valid RoleAssignmentRequest assignmentRequest) {
+            @Valid @NotNull(message = "Must select a role") @RequestParam("role") Long roleId) {
 
         RoleAssignment roleAssignment = rest.getRoleAssignment(assignmentId)
                 .orElseThrow(() -> new EntityNotFoundException(RoleAssignment.class, String.valueOf(assignmentId)));
@@ -46,24 +47,17 @@ public class RoleAssignmentController {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        User user = rest.getUser(assignmentRequest.user);
-        if (user == null) {
-            throw new EntityNotFoundException(User.class, assignmentRequest.user);
-        }
+        RoleModel role = rest.getRole(roleId).orElseThrow
+                (()  -> new EntityNotFoundException(RoleModel.class, String.valueOf(roleId)));
 
-        RoleModel role = rest.getRole(assignmentRequest.role).orElseThrow
-                (()  -> new EntityNotFoundException(RoleModel.class, String.valueOf(assignmentRequest.role)));
-
-        roleAssignment.setUser(user);
         roleAssignment.setRole(role);
-
         rest.updateRoleAssignment(roleAssignment);
 
         return ResponseEntity.ok().build();
     }
 
     @PostMapping("/security/roles/{roleType}/{target}/user/delete")
-    @PreAuthorize("hasPermission(#targetId, #type, 'MANAGE_ROLES')")
+    @PreAuthorize("hasPermission(#targetId, #type, 'ASSIGN_VAULT_ROLES') or hasPermission(#targetId, 'GROUP_VAULT', 'ASSIGN_SCHOOL_VAULT_ROLES')")
     public ResponseEntity removeRoleAssignment(@PathVariable("roleType") String type,
                                                @PathVariable("target") String targetId,
                                                @RequestParam("assignment") long assignmentId) {
@@ -82,7 +76,7 @@ public class RoleAssignmentController {
         return ResponseEntity.ok().build();
     }
 
-    @PreAuthorize("hasPermission(#targetId, #type, 'MANAGE_ROLES')")
+    @PreAuthorize("hasPermission(#targetId, #type, 'ASSIGN_VAULT_ROLES') or hasPermission(#targetId, 'GROUP_VAULT', 'ASSIGN_SCHOOL_VAULT_ROLES')")
     @PostMapping("/security/roles/{roleType}/{target}/user")
     public ResponseEntity createRoleAssignment(
             @PathVariable("roleType") String type,
@@ -91,6 +85,10 @@ public class RoleAssignmentController {
             @RequestParam("user") String userId) {
 
         RoleAssignment assignment = new RoleAssignment();
+        User user = rest.getUser(userId);
+        if (user == null) {
+            return ResponseEntity.status(422).body("No such user");
+        }
 
         RoleType roleType = RoleType.valueOf(type.toUpperCase());
         switch (roleType) {
@@ -98,16 +96,23 @@ public class RoleAssignmentController {
                 assignment.setSchool(rest.getGroup(targetId));
                 break;
             case VAULT:
+                boolean hasVaultRole = rest.getRoleAssignmentsForUser(userId)
+                        .stream()
+                        .anyMatch(role -> {
+                            Vault vault = role.getVault();
+                            return vault != null && vault.getID().equals(targetId);
+                        });
+
+                if (hasVaultRole) {
+                    return ResponseEntity.status(422).body("User already has a role in this vault");
+                }
+
                 assignment.setVault(rest.getVaultRecord(targetId));
                 break;
             default:
                 return ResponseEntity.notFound().build();
         }
 
-        User user = rest.getUser(userId);
-        if (user == null) {
-            throw new EntityNotFoundException(User.class, userId);
-        }
 
         RoleModel role = rest.getRole(roleId)
                 .orElseThrow(() -> new EntityNotFoundException(RoleModel.class, String.valueOf(roleId)));
