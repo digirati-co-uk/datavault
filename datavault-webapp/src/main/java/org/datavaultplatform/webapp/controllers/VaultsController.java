@@ -1,20 +1,16 @@
 package org.datavaultplatform.webapp.controllers;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.MoreCollectors;
 import com.google.gson.Gson;
 import org.apache.commons.lang.RandomStringUtils;
-import org.datavaultplatform.common.model.DataManager;
-import org.datavaultplatform.common.model.Dataset;
-import org.datavaultplatform.common.model.Group;
-import org.datavaultplatform.common.model.RetentionPolicy;
-import org.datavaultplatform.common.model.Retrieve;
-import org.datavaultplatform.common.model.RoleAssignment;
-import org.datavaultplatform.common.model.User;
-import org.datavaultplatform.common.model.Vault;
+import org.datavaultplatform.common.model.*;
 import org.datavaultplatform.common.request.CreateVault;
 import org.datavaultplatform.common.request.TransferVault;
 import org.datavaultplatform.common.response.DepositInfo;
 import org.datavaultplatform.common.response.VaultInfo;
+import org.datavaultplatform.common.util.RoleUtils;
+import org.datavaultplatform.webapp.exception.ForbiddenException;
 import org.datavaultplatform.webapp.exception.InvalidUunException;
 import org.datavaultplatform.webapp.services.RestService;
 import org.datavaultplatform.webapp.services.UserLookupService;
@@ -24,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.validation.BindingResult;
@@ -45,11 +42,8 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.AssertTrue;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.security.Principal;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Controller
@@ -83,6 +77,7 @@ public class VaultsController {
         this.userLookupService = userLookupService;
     }
 
+    @PreAuthorize("hasPermission(#vaultId, 'VAULT', 'CAN_TRANSFER_VAULT_OWNERSHIP') or hasPermission(#vaultId, 'GROUP_VAULT', 'TRANSFER_SCHOOL_VAULT_OWNERSHIP')")
     @PostMapping(value = "/vaults/{vaultid}/data-owner/update")
     public ResponseEntity transferOwnership(
             @PathVariable("vaultid") String vaultId,
@@ -143,13 +138,25 @@ public class VaultsController {
     }
 
     @RequestMapping(value = "/vaults/{vaultid}", method = RequestMethod.GET)
-    public String getVault(ModelMap model, @PathVariable("vaultid") String vaultID) throws Exception {
+    public String getVault(ModelMap model, @PathVariable("vaultid") String vaultID, Principal principal) throws Exception {
         VaultInfo vault = restService.getVault(vaultID);
 
+        if (!canAccessVault(vault, principal)) {
+            throw new ForbiddenException();
+        }
+
         List<RoleAssignment> roleAssignmentsForVault = restService.getRoleAssignmentsForVault(vaultID);
+        List<RoleAssignment> vaultUsers = roleAssignmentsForVault.stream()
+                .filter(roleAssignment -> !RoleUtils.isDataOwner(roleAssignment))
+                .collect(Collectors.toList());
+        roleAssignmentsForVault.stream()
+                .filter(RoleUtils::isDataOwner)
+                .findFirst()
+                .ifPresent(roleAssignment -> model.addAttribute("dataOwner", roleAssignment));
+
         model.addAttribute("vault", vault);
         model.addAttribute("roles", restService.getVaultRoles());
-        model.addAttribute("roleAssignments", roleAssignmentsForVault);
+        model.addAttribute("roleAssignments", vaultUsers);
         model.addAttribute(restService.getRetentionPolicy(vault.getPolicyID()));
         model.addAttribute(restService.getGroup(vault.getGroupID()));
         
@@ -183,6 +190,14 @@ public class VaultsController {
         model.addAttribute("dataManagers", dataManagerUsers);
         
         return "vaults/vault";
+    }
+
+    private boolean canAccessVault(VaultInfo vault, Principal principal) {
+        List<RoleAssignment> roleAssignmentsForUser = restService.getRoleAssignmentsForUser(principal.getName());
+        return roleAssignmentsForUser.stream().anyMatch(roleAssignment ->
+                RoleUtils.isISAdmin(roleAssignment)
+                        || RoleUtils.isRoleInVault(roleAssignment, vault.getID())
+                        || (RoleUtils.isRoleInSchool(roleAssignment, vault.getGroupID()) && RoleUtils.hasPermission(roleAssignment, Permission.CAN_MANAGE_VAULTS)));
     }
     
     @RequestMapping(value = "/vaults/{vaultid}/{userid}", method = RequestMethod.GET)

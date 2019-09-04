@@ -111,6 +111,10 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
         return roleDao.getIsAdmin();
     }
 
+    public RoleModel getDataOwner() {
+        return roleDao.getDataOwner();
+    }
+
     public List<RoleModel> getEditableRoles() {
         return roleDao.findAll().stream()
                 .filter(role -> role.getType().isCustomCreatable())

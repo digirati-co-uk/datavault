@@ -1,10 +1,11 @@
 <#-- @ftlvariable name="vault" type="org.datavaultplatform.common.response.VaultInfo" -->
 <style>
     #add-new {
-        margin: 2em 0;
+        margin-top: 2em;
     }
 
     #role-assignments {
+        margin-top: 2em;
         padding: 0 2em 0 0;
     }
 
@@ -29,6 +30,7 @@
     }
 
     .role-definitions {
+        margin-top: 2em;
         border-left: 1px solid;
         padding: 0 1em;
     }
@@ -76,8 +78,11 @@
 
 <#import "/spring.ftl" as spring />
 <#assign sec=JspTaglibs["http://www.springframework.org/security/tags"] />
+<#assign assignVaultRolesSecurityExpression = "hasPermission('${vault.ID}', 'vault', 'ASSIGN_VAULT_ROLES') or hasPermission('${vault.groupID}', 'GROUP', 'ASSIGN_SCHOOL_VAULT_ROLES')">
+<#assign transferOwnershipSecurityExpression = "hasPermission('${vault.ID}', 'vault', 'CAN_TRANSFER_VAULT_OWNERSHIP') or hasPermission('${vault.groupID}', 'GROUP', 'TRANSFER_SCHOOL_VAULT_OWNERSHIP')">
+<#assign showActionsColumnSecurityExpression = assignVaultRolesSecurityExpression + " or " + transferOwnershipSecurityExpression />
 
-
+<@sec.authorize access=transferOwnershipSecurityExpression>
 <div id="orphan-dialog" class="modal fade" tabindex="-1" role="dialog"
      aria-labelledby="orphan-user-title"
      aria-hidden="true">
@@ -105,6 +110,7 @@
                         </div>
                     </div>
 
+                    <@sec.authorize access=assignVaultRolesSecurityExpression>
                     <div class="col-sm-10 form-group ui-widget">
                         <label for="transfer-role" class="control-label form-label">Vault role to assign to previous
                             Data Owner</label>
@@ -117,19 +123,17 @@
                         </div>
                     </div>
 
-                    <#assign securityExpr = "hasPermission('${vault.ID}', 'vault', 'MANAGE_ROLES')">
-                    <@sec.authorize access=securityExpr>
-                        <div class="form-group ui-widget col-sm-10 form-confirm">
-                            <div class="checkbox">
-                                <input class="form-check-input" id="confirm-checkbox" type="checkbox"
-                                       name="assigningRole" checked="checked"/>
-                            </div>
-                            <label for="confirm-checkbox" class="control-label">Assign role to previous data
-                                owner?</label>
+                    <div class="form-group ui-widget col-sm-10 form-confirm">
+                        <div class="checkbox">
+                            <input class="form-check-input" id="confirm-checkbox" type="checkbox"
+                                   name="assigningRole" checked="checked"/>
                         </div>
+                        <label for="confirm-checkbox" class="control-label">Assign role to previous data
+                            owner?</label>
+                    </div>
                     </@sec.authorize>
 
-                    <@sec.authorize access="hasRole('ROLE_IS_ADMIN')">
+                    <@sec.authorize access="hasRole('ROLE_IS_ADMIN') or hasPermission('${vault.groupID}', 'GROUP', 'CAN_ORPHAN_SCHOOL_VAULTS')">
                         <div class="form-group ui-widget col-sm-10 form-confirm">
                             <div class="checkbox">
                                 <input class="form-check-input" id="orphan-checkbox" type="checkbox" name="orphaning"/>
@@ -156,7 +160,9 @@
         </div>
     </div>
 </div>
+</@sec.authorize>
 
+<@sec.authorize access=assignVaultRolesSecurityExpression>
 <div id="add-new-dialog" class="modal fade" tabindex="-1" role="dialog"
      aria-labelledby="add-new-user-title"
      aria-hidden="true">
@@ -279,6 +285,7 @@
 <div id="add-new">
     <a href="#" data-toggle="modal" data-target="#add-new-dialog">+ Add new user to vault</a>
 </div>
+</@sec.authorize>
 
 <div class="col-md-8" id="role-assignments">
     <div class="table-responsive">
@@ -298,21 +305,27 @@
                         </#list>
                     </div>
                 </th>
+                <@sec.authorize access=showActionsColumnSecurityExpression>
                 <th class="action-column">Actions</th>
+                </@sec.authorize>
             </tr>
             </thead>
             <tbody>
-            <#if vault.userName?has_content>
+            <#if dataOwner??>
                 <tr>
-                    <td>${vault.userName}</td>
-                    <td class="role-column">Data Owner</td>
+                    <td>${dataOwner.user.firstname} ${dataOwner.user.lastname}</td>
+                    <td class="role-column">${dataOwner.role.name}</td>
+                    <@sec.authorize access=showActionsColumnSecurityExpression>
                     <td class="action-column">
+                        <@sec.authorize access=transferOwnershipSecurityExpression>
                         <a href="#" class="btn btn-default" data-toggle="modal"
                            data-target="#orphan-dialog"
-                           data-user-name="${vault.userName}"
+                           data-user-name="${dataOwner.user.firstname} ${dataOwner.user.lastname}"
                            title="Transfer ownership of this vault."><i
                                     class="fa fa-users"></i></a>
+                        </@sec.authorize>
                     </td>
+                    </@sec.authorize>
                 </tr>
             </#if>
 
@@ -320,7 +333,9 @@
                 <tr>
                     <td>${assignment.user.firstname} ${assignment.user.lastname}</td>
                     <td class="role-column">${assignment.role.name}</td>
+                    <@sec.authorize access=showActionsColumnSecurityExpression>
                     <td class="action-column">
+                        <@sec.authorize access=assignVaultRolesSecurityExpression>
                         <a href="#" class="btn btn-default" data-toggle="modal"
                            data-target="#update-existing-dialog" data-assignment-id="${assignment.id}"
                            data-user-name="${assignment.user.firstname} ${assignment.user.lastname}"
@@ -331,7 +346,9 @@
                            data-user-name="${assignment.user.firstname} ${assignment.user.lastname}"
                            title="Remove role assignment for user ${assignment.user.firstname} ${assignment.user.lastname}."><i
                                     class="fa fa-trash"></i></a>
+                        </@sec.authorize>
                     </td>
+                    </@sec.authorize>
                 </tr>
             </#list>
             </tbody>
@@ -366,6 +383,7 @@
         });
     });
 
+    <@sec.authorize access=assignVaultRolesSecurityExpression>
     $('[data-target="#add-new-dialog"]').click(function () {
         $('#create-error').addClass('hidden').text('');
     });
@@ -385,13 +403,18 @@
         $('#delete-role-user-name').text(userName);
         $('#delete-error').addClass('hidden').text('');
     });
+    </@sec.authorize>
 
     var redirectUri = '<@spring.url "/vaults/${vault.ID}"/>';
     var forms = [
+        <@sec.authorize access=assignVaultRolesSecurityExpression>
         '#create-form',
         '#update-form',
         '#delete-form',
+        </@sec.authorize>
+        <@sec.authorize access=transferOwnershipSecurityExpression>
         '#transfer-form',
+        </@sec.authorize>
     ];
 
     for (var formSelector of forms) {
