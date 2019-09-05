@@ -143,7 +143,7 @@ public class AdminSchoolsController {
                 roleId);
         RoleAssignment newRoleAssignment = new RoleAssignment();
         newRoleAssignment.setRole(role.get());
-        newRoleAssignment.setUser(user.get());
+        newRoleAssignment.setUserId(userId);
         newRoleAssignment.setSchool(school.get());
         createNewRoleAssignment(newRoleAssignment);
 
@@ -260,7 +260,7 @@ public class AdminSchoolsController {
 
     private void createNewRoleAssignment(RoleAssignment toCreate) {
         restService.createRoleAssignment(toCreate);
-        forceLogoutService.logoutUser(toCreate.getUser().getID());
+        forceLogoutService.logoutUser(toCreate.getUserId());
     }
 
     private Optional<RoleAssignment> getRoleAssignment(long assignmentId) {
@@ -270,11 +270,11 @@ public class AdminSchoolsController {
     private void updateRoleAssignment(RoleAssignment originalRoleAssignment, RoleModel newRole) {
         originalRoleAssignment.setRole(newRole);
         restService.updateRoleAssignment(originalRoleAssignment);
-        forceLogoutService.logoutUser(originalRoleAssignment.getUser().getID());
+        forceLogoutService.logoutUser(originalRoleAssignment.getUserId());
     }
 
     private void deleteRoleAssignment(RoleAssignment toDelete) {
         restService.deleteRoleAssignment(toDelete.getId());
-        forceLogoutService.logoutUser(toDelete.getUser().getID());
+        forceLogoutService.logoutUser(toDelete.getUserId());
     }
 }
