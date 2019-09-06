@@ -19,17 +19,16 @@ public class DaoUtils {
 
     public static Set<String> getPermittedSchoolIds(Session session, String userId, Permission permission) {
         Criteria roleAssignmentsCriteria = session.createCriteria(RoleAssignment.class, "roleAssignment");
-        roleAssignmentsCriteria.createAlias("roleAssignment.user", "user");
         roleAssignmentsCriteria.createAlias("roleAssignment.role", "role");
         roleAssignmentsCriteria.createAlias("role.permissions", "permissions");
-        roleAssignmentsCriteria.add(Restrictions.eq("user.id", userId));
+        roleAssignmentsCriteria.add(Restrictions.eq("roleAssignment.userId", userId));
         roleAssignmentsCriteria.add(Restrictions.eq("permissions.id", permission.getId()));
         roleAssignmentsCriteria.add(Restrictions.or(
-                Restrictions.isNotNull("roleAssignment.school"),
+                Restrictions.isNotNull("roleAssignment.schoolId"),
                 Restrictions.eq("role.type", RoleType.ADMIN)));
         List<RoleAssignment> roleAssignments = roleAssignmentsCriteria.list();
         return roleAssignments.stream()
-                .map(roleAssignment -> roleAssignment.getSchool() == null ? FULL_ACCESS_INDICATOR : roleAssignment.getSchool().getID())
+                .map(roleAssignment -> roleAssignment.getSchoolId() == null ? FULL_ACCESS_INDICATOR : roleAssignment.getSchoolId())
                 .collect(Collectors.toSet());
     }
 }

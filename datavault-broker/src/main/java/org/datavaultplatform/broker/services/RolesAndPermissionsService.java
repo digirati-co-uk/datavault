@@ -74,16 +74,16 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
     }
 
     private void validateRoleAssignment(RoleAssignment roleAssignment) {
-        if (roleAssignment.getUser() == null) {
+        if (roleAssignment.getUserId() == null) {
             throw new IllegalStateException("Cannot create role assignment without user");
         }
         if (roleAssignment.getRole() == null) {
             throw new IllegalStateException("Cannot create role assignment without role");
         }
-        if (RoleType.SCHOOL == roleAssignment.getRole().getType() && roleAssignment.getSchool() == null) {
+        if (RoleType.SCHOOL == roleAssignment.getRole().getType() && roleAssignment.getSchoolId() == null) {
             throw new IllegalStateException("Cannot create school role assignment without a school");
         }
-        if (RoleType.VAULT == roleAssignment.getRole().getType() && roleAssignment.getVault() == null) {
+        if (RoleType.VAULT == roleAssignment.getRole().getType() && roleAssignment.getVaultId() == null) {
             throw new IllegalStateException("Cannot create vault role assignment without a vault");
         }
         if (roleAssignmentDao.roleAssignmentExists(roleAssignment)) {

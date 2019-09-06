@@ -46,18 +46,18 @@ public class ScopedGrantedAuthority implements GrantedAuthority {
         List<ScopedGrantedAuthority> authorities = new ArrayList<>();
 
         for (RoleAssignment assignment : roleAssignments) {
-            Vault vault = assignment.getVault();
-            Group group = assignment.getSchool();
+            String vaultId = assignment.getVaultId();
+            String groupId = assignment.getSchoolId();
 
             Collection<Permission> permissions = assignment.getRole().getPermissions()
                     .stream()
                     .map(PermissionModel::getPermission)
                     .collect(Collectors.toList());
 
-            if (vault != null) {
-                authorities.add(new ScopedGrantedAuthority(Vault.class, vault.getID(), permissions));
-            } else if (group != null) {
-                authorities.add(new ScopedGrantedAuthority(Group.class, group.getID(), permissions));
+            if (vaultId != null) {
+                authorities.add(new ScopedGrantedAuthority(Vault.class, vaultId, permissions));
+            } else if (groupId != null) {
+                authorities.add(new ScopedGrantedAuthority(Group.class, groupId, permissions));
             }
         }
 

@@ -28,12 +28,12 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
 
             Criteria criteria = session.createCriteria(RoleAssignment.class);
             criteria.add(Restrictions.eq("role", roleAssignment.getRole()));
-            criteria.add(Restrictions.eq("user", roleAssignment.getUser()));
-            if (roleAssignment.getSchool() != null) {
-                criteria.add(Restrictions.eq("school", roleAssignment.getSchool()));
+            criteria.add(Restrictions.eq("userId", roleAssignment.getUserId()));
+            if (roleAssignment.getSchoolId() != null) {
+                criteria.add(Restrictions.eq("schoolId", roleAssignment.getSchoolId()));
             }
-            if (roleAssignment.getVault() != null) {
-                criteria.add(Restrictions.eq("vault", roleAssignment.getVault()));
+            if (roleAssignment.getVaultId() != null) {
+                criteria.add(Restrictions.eq("vaultId", roleAssignment.getVaultId()));
             }
             return criteria.uniqueResult() != null;
         } finally {
@@ -93,8 +93,7 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
         try {
             session = sessionFactory.openSession();
 
-            Group school = findObjectById(session, Group.class, "id", schoolId);
-            List<RoleAssignment> schoolAssignments = findBy(session, "school", school);
+            List<RoleAssignment> schoolAssignments = findBy(session, "schoolId", schoolId);
             return schoolAssignments;
         } finally {
             if (session != null) session.close();
@@ -120,9 +119,8 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
         try {
             session = sessionFactory.openSession();
 
-            Vault vault = findObjectById(session, Vault.class, "id", vaultId);
-            List<RoleAssignment> schoolAssignments = findBy(session, "vault", vault);
-            return schoolAssignments;
+            List<RoleAssignment> vaultAssignments = findBy(session, "vaultId", vaultId);
+            return vaultAssignments;
         } finally {
             if (session != null) session.close();
         }
@@ -135,8 +133,7 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
         try {
             session = sessionFactory.openSession();
 
-            User user = findObjectById(session, User.class, "id", userId);
-            List<RoleAssignment> schoolAssignments = findBy(session, "user", user);
+            List<RoleAssignment> schoolAssignments = findBy(session, "userId", userId);
             return schoolAssignments;
         } finally {
             if (session != null) session.close();

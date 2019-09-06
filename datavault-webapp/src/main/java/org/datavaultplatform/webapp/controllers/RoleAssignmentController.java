@@ -57,7 +57,7 @@ public class RoleAssignmentController {
         roleAssignment.setRole(role);
         rest.updateRoleAssignment(roleAssignment);
 
-        forceLogoutService.logoutUser(roleAssignment.getUser().getID());
+        forceLogoutService.logoutUser(roleAssignment.getUserId());
 
         return ResponseEntity.ok().build();
     }
@@ -79,7 +79,7 @@ public class RoleAssignmentController {
 
         rest.deleteRoleAssignment(assignment.getId());
 
-        forceLogoutService.logoutUser(assignment.getUser().getID());
+        forceLogoutService.logoutUser(assignment.getUserId());
 
         return ResponseEntity.ok().build();
     }
@@ -101,21 +101,18 @@ public class RoleAssignmentController {
         RoleType roleType = RoleType.valueOf(type.toUpperCase());
         switch (roleType) {
             case SCHOOL:
-                assignment.setSchool(rest.getGroup(targetId));
+                assignment.setSchoolId(targetId);
                 break;
             case VAULT:
                 boolean hasVaultRole = rest.getRoleAssignmentsForUser(userId)
                         .stream()
-                        .anyMatch(role -> {
-                            Vault vault = role.getVault();
-                            return vault != null && vault.getID().equals(targetId);
-                        });
+                        .anyMatch(role -> role.getVaultId() != null && role.getVaultId().equals(targetId));
 
                 if (hasVaultRole) {
                     return ResponseEntity.status(422).body("User already has a role in this vault");
                 }
 
-                assignment.setVault(rest.getVaultRecord(targetId));
+                assignment.setVaultId(targetId);
                 break;
             default:
                 return ResponseEntity.notFound().build();
@@ -125,7 +122,7 @@ public class RoleAssignmentController {
         RoleModel role = rest.getRole(roleId)
                 .orElseThrow(() -> new EntityNotFoundException(RoleModel.class, String.valueOf(roleId)));
 
-        assignment.setUser(user);
+        assignment.setUserId(userId);
         assignment.setRole(role);
         rest.createRoleAssignment(assignment);
 

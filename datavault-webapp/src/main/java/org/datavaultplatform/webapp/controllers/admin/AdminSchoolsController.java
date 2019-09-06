@@ -126,7 +126,7 @@ public class AdminSchoolsController {
         }
 
         List<RoleAssignment> userRoleAssignments = restService.getRoleAssignmentsForUser(userId);
-        if (userRoleAssignments.stream().anyMatch(r -> r.getSchool() != null && r.getSchool().getID().equals(schoolId))) {
+        if (userRoleAssignments.stream().anyMatch(r -> r.getSchoolId() != null && r.getSchoolId().equals(schoolId))) {
             logger.debug("Attempted to add a new school role assignment for user {} and school {} when one already exists",
                     userId,
                     schoolId);
@@ -143,8 +143,8 @@ public class AdminSchoolsController {
                 roleId);
         RoleAssignment newRoleAssignment = new RoleAssignment();
         newRoleAssignment.setRole(role.get());
-        newRoleAssignment.setUser(user.get());
-        newRoleAssignment.setSchool(school.get());
+        newRoleAssignment.setUserId(userId);
+        newRoleAssignment.setSchoolId(schoolId);
         createNewRoleAssignment(newRoleAssignment);
 
         return ResponseEntity.ok().build();
@@ -213,8 +213,8 @@ public class AdminSchoolsController {
             logger.error("Attempted to delete a school role assignment {} but no such role assignment was found", assignmentId);
             throw new EntityNotFoundException(RoleAssignment.class, String.valueOf(assignmentId));
 
-        } else if (userRoleAssignment.get().getSchool() == null
-                || !userRoleAssignment.get().getSchool().getID().equals(schoolId)) {
+        } else if (userRoleAssignment.get().getSchoolId() == null
+                || !userRoleAssignment.get().getSchoolId().equals(schoolId)) {
             logger.debug("Attempted to delete role assignment that was not assigned to school {}.", schoolId);
             return validationFailed("Role assignment belongs to a different school");
         }
@@ -260,7 +260,7 @@ public class AdminSchoolsController {
 
     private void createNewRoleAssignment(RoleAssignment toCreate) {
         restService.createRoleAssignment(toCreate);
-        forceLogoutService.logoutUser(toCreate.getUser().getID());
+        forceLogoutService.logoutUser(toCreate.getUserId());
     }
 
     private Optional<RoleAssignment> getRoleAssignment(long assignmentId) {
@@ -270,11 +270,11 @@ public class AdminSchoolsController {
     private void updateRoleAssignment(RoleAssignment originalRoleAssignment, RoleModel newRole) {
         originalRoleAssignment.setRole(newRole);
         restService.updateRoleAssignment(originalRoleAssignment);
-        forceLogoutService.logoutUser(originalRoleAssignment.getUser().getID());
+        forceLogoutService.logoutUser(originalRoleAssignment.getUserId());
     }
 
     private void deleteRoleAssignment(RoleAssignment toDelete) {
         restService.deleteRoleAssignment(toDelete.getId());
-        forceLogoutService.logoutUser(toDelete.getUser().getID());
+        forceLogoutService.logoutUser(toDelete.getUserId());
     }
 }
