@@ -3,12 +3,15 @@ package org.datavaultplatform.common.model.dao;
 import org.datavaultplatform.common.model.*;
 import org.datavaultplatform.common.util.RoleUtils;
 import org.hibernate.Criteria;
+import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.criterion.Restrictions;
 
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
 
@@ -71,6 +74,27 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
             if (session != null) session.close();
         }
 
+    }
+
+    @Override
+    public Set<Permission> findUserPermissions(String userId) {
+        Session session = null;
+
+        try {
+            session = sessionFactory.openSession();
+            Query query = session.createQuery("SELECT DISTINCT role.permissions \n" +
+                    "FROM org.datavaultplatform.common.model.RoleAssignment ra\n" +
+                    "INNER JOIN ra.role as role\n" +
+                    "WHERE ra.userId = :userId");
+            query.setParameter("userId", userId);
+
+            return ((List<PermissionModel>) query.list())
+                    .stream()
+                    .map(PermissionModel::getPermission)
+                    .collect(Collectors.toSet());
+        } finally {
+            if (session != null) session.close();
+        }
     }
 
     @Override
@@ -155,25 +179,6 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
             if (session != null) session.close();
         }
 
-    }
-
-    @Override
-    public boolean hasPermission(String userId, Permission permission) {
-        Session session = null;
-        try {
-            session = sessionFactory.openSession();
-            Criteria criteria = session.createCriteria(RoleAssignment.class, "assignment");
-            criteria.createAlias("assignment.role", "role");
-            criteria.createAlias("role.permissions", "permission");
-            criteria.add(Restrictions.eq("assignment.userId", userId));
-            criteria.add(Restrictions.eq("permission.id", permission.getId()));
-            return criteria.list().size() > 0;
-
-        } finally {
-            if (session != null) {
-                session.close();
-            }
-        }
     }
 
     @Override
