@@ -22,3 +22,4 @@ export VAULT_PEM_FILE=${VAULT_PEM_FILE:- }
 export KEYSTORE_ENABLE=${KEYSTORE_ENABLE:-false}
 export KEYSTORE_PATH=${KEYSTORE_PATH:-/docker_datavault-home/keystore/DatavaultKeyStore}
 export KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-veryStrongPassword}
+export CATALINA_OPTS=${CATALINA_OPTS:--agentpath:/usr/local/YourKit-JavaProfiler-2019.8/bin/linux-x86-64/libyjpagent.so=port=10001,listen=all}
