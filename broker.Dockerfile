@@ -9,7 +9,7 @@ ARG LOCAL_DATAVAULT_DIR="./datavault"
 
 ENV DATAVAULT_HOME "/docker_datavault-home"
 
-RUN apk add --no-cache mysql curl su-exec libc6-compat
+RUN apk add --no-cache mysql curl su-exec libc6-compat gcompat
 RUN wget https://www.yourkit.com/download/docker/YourKit-JavaProfiler-2019.8-docker.zip -P /tmp/ && \
   unzip /tmp/YourKit-JavaProfiler-2019.8-docker.zip -d /usr/local && \
   rm /tmp/YourKit-JavaProfiler-2019.8-docker.zip
