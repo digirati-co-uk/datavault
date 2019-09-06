@@ -1,6 +1,7 @@
 package org.datavaultplatform.common.model.dao;
 
 import org.datavaultplatform.common.model.*;
+import org.datavaultplatform.common.util.RoleUtils;
 import org.hibernate.Criteria;
 import org.hibernate.Query;
 import org.hibernate.Session;
@@ -10,7 +11,6 @@ import org.hibernate.criterion.Restrictions;
 
 import java.util.List;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
@@ -179,6 +179,24 @@ public class RoleAssignmentDaoImpl implements RoleAssignmentDAO {
             if (session != null) session.close();
         }
 
+    }
+
+    @Override
+    public boolean isAdminUser(String userId) {
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+            Criteria criteria = session.createCriteria(RoleAssignment.class, "assignment");
+            criteria.createAlias("assignment.role", "role");
+            criteria.add(Restrictions.eq("assignment.userId", userId));
+            criteria.add(Restrictions.eq("role.name", RoleUtils.IS_ADMIN_ROLE_NAME));
+            return criteria.list().size() > 0;
+
+        } finally {
+            if (session != null) {
+                session.close();
+            }
+        }
     }
 
     @Override

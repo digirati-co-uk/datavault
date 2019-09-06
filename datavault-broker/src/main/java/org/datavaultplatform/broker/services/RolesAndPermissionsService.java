@@ -94,15 +94,11 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
     }
 
     public List<PermissionModel> getSchoolPermissions() {
-        return getFilteredPermissions(PermissionModel::isSchoolPermission);
+        return permissionDao.findByType(PermissionModel.PermissionType.SCHOOL);
     }
 
     public List<PermissionModel> getVaultPermissions() {
-        return getFilteredPermissions(PermissionModel::isVaultPermission);
-    }
-
-    private List<PermissionModel> getFilteredPermissions(Predicate<PermissionModel> filter) {
-        return permissionDao.findAll().stream().filter(filter).collect(Collectors.toList());
+        return permissionDao.findByType(PermissionModel.PermissionType.VAULT);
     }
 
     public RoleModel getRole(long id) {
@@ -118,9 +114,7 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
     }
 
     public List<RoleModel> getEditableRoles() {
-        return roleDao.findAll().stream()
-                .filter(role -> role.getType().isCustomCreatable())
-                .collect(Collectors.toList());
+        return roleDao.findAllEditableRoles();
     }
 
     public List<RoleModel> getViewableRoles() {
@@ -155,20 +149,12 @@ public class RolesAndPermissionsService implements ApplicationListener<ContextRe
         return roleAssignmentDao.findByRoleId(roleId);
     }
 
-    public boolean hasAdminDashboardPermissions(String userId) {
-        return roleAssignmentDao.findByUserId(userId).stream()
-                .flatMap(roleAssignment -> roleAssignment.getRole().getPermissions().stream())
-                .anyMatch(permissionModel -> permissionModel.getPermission().isDashboardPermission());
-    }
-
     public Set<Permission> getUserPermissions(String userId) {
         return roleAssignmentDao.findUserPermissions(userId);
     }
 
-    public boolean hasPermission(String userId, Permission permission) {
-        return roleAssignmentDao.findByUserId(userId).stream()
-                .flatMap(roleAssignment -> roleAssignment.getRole().getPermissions().stream())
-                .anyMatch(permissionModel -> permissionModel.getPermission() == permission);
+    public boolean isAdminUser(String userId) {
+        return roleAssignmentDao.isAdminUser(userId);
     }
 
     public RoleModel updateRole(RoleModel role) {

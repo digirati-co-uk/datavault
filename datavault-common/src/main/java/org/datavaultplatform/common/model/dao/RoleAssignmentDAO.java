@@ -26,6 +26,8 @@ public interface RoleAssignmentDAO {
 
     List<RoleAssignment> findByRoleId(Long roleId);
 
+    boolean isAdminUser(String userId);
+
     void update(RoleAssignment roleAssignment);
 
     void delete(Long id);
