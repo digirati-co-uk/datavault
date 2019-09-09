@@ -31,7 +31,7 @@
             color: #000;
         }
         .modal-dialog textarea {
-            max-width: 265px;
+            max-width: 75%;
         }
         .modal-dialog select.form-control {
             width: 193px;
@@ -40,8 +40,21 @@
             margin-top: 7px;
             font-weight: 400;
         }
+        #modalnewedit .col-xs-9 {
+            width: 75%;
+        }
+        #modalnewedit .row {
+            margin-right: 0;
+            padding-right: 0;
+        }
         #permissions {
             margin-top: 20px;
+        }
+        #permissions .permission {
+            padding-left: 0;
+        }
+        #permissions .permission-label {
+            padding-left: 10px;
         }
     </style>
 
@@ -70,9 +83,11 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-xs-6 form-group form-inline">
-                                <label class="control-label col-xs-3" for="edit_description">Description</label>
-                                <textarea class="form-control col-xs-9" name="description" id="edit_description"></textarea>
+                            <div class="col-xs-6">
+                                <div class="form-group form-inline row">
+                                    <label class="control-label col-xs-3" for="edit_description">Description</label>
+                                    <textarea class="form-control col-xs-9" name="description" id="edit_description"></textarea>
+                                </div>
                             </div>
                         </div>
                         <div class="row col-xs-12" id="permissions">
@@ -150,7 +165,7 @@
                                 <td>${superAdminRole.getName()}</td>
                                 <td>${superAdminRole.getAssignedUserCount()}</td>
                                 <td class="action-column">
-                                    <a id="isadmin-button" class="btn btn-default" href="${springMacroRequestContext.getContextPath()}/admin/roles/isadmin" title="Edit the ${superAdminRole.name} role.">
+                                    <a id="isadmin-button" class="btn btn-default" href="${springMacroRequestContext.getContextPath()}/admin/roles/isadmin" title="Manage ${superAdminRole.name} users.">
                                         <i class="fa fa-users"></i>
                                     </a>
                                 </td>
@@ -161,10 +176,10 @@
                                 <td>${role.getName()}</td>
                                 <td>${role.getAssignedUserCount()}</td>
                                 <td class="action-column">
-                                    <a href="#" class="btn btn-default" disabled="disabled" role="button" title="The ${role.name} role cannot be edited.">
+                                    <a href="#" class="btn btn-default" disabled="disabled" role="button" title="Cannot edit the ${role.name} role.">
                                         <i class="fa fa-pencil"></i>
                                     </a>
-                                    <a href="#" class="btn btn-default btn-delete" disabled="disabled" role="button" title="The ${role.name} role cannot be removed.">
+                                    <a href="#" class="btn btn-default btn-delete" disabled="disabled" role="button" title="Cannot delete the ${role.name} role.">
                                         <i class="fa fa-trash"></i>
                                     </a>
                                 </td>
@@ -178,7 +193,7 @@
                                     <a href="#" class="btn btn-default editRoleButton" role="button" value="${role.getId()}" title="Edit the ${role.name} role.">
                                         <i class="fa fa-pencil"></i>
                                     </a>
-                                    <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-role-id="${role.id}" data-role-name="${role.name}" role="button" title="Remove the ${role.name} role.">
+                                    <a href="#" class="btn btn-default btn-delete" data-toggle="modal" data-target="#delete-dialog" data-role-id="${role.id}" data-role-name="${role.name}" role="button" title="Delete the ${role.name} role.">
                                         <i class="fa fa-trash-o"></i>
                                     </a>
                                 </td>
@@ -297,7 +312,7 @@
 
                     $("#edit_vaultpermissions").empty();
                     permissions.forEach(function(p) {
-                        setPermissionsHtml(p, data.role.permissions.includes(p), "edit_vaultpermissions")
+                        setPermissionsHtml(p, data.role.permissions.indexOf(p) >= 0, "edit_vaultpermissions")
                     });
 
                 },
@@ -312,17 +327,19 @@
             outdiv.classList.add("col-xs-6");
             outdiv.classList.add("form-group");
             outdiv.classList.add("form-inline");
+            outdiv.classList.add("permission");
             var indiv = document.createElement("div");
             indiv.classList.add("checkbox");
             var label = document.createElement("label");
             label.innerText = " " + permission.label;
-            label.classList.add("model_layout_permission_label");
+            label.classList.add("permission-label");
             label.setAttribute("for", permission.id);
             var input = document.createElement("input");
             input.setAttribute("name", "permissions");
             input.setAttribute("type", "checkbox");
             input.setAttribute("id", permission.id);
             input.setAttribute("value", permission.id);
+            input.classList.add("permission-checkbox");
             input.checked = checked;
 
             indiv.appendChild(input);

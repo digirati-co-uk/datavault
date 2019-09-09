@@ -340,13 +340,11 @@
                            data-target="#update-existing-dialog" data-assignment-id="${assignment.id}"
                            data-user-name="${assignment.userId}"
                            data-user-role="${assignment.role.id}"
-                           title="Edit role assignment for user ${assignment.userId}."><i
-                                    class="fa fa-pencil"></i></a>
+                           title="Edit role for ${assignment.userId}."><i class="fa fa-pencil"></i></a>
                         <a href="#" class="btn btn-default btn-delete" data-toggle="modal"
                            data-target="#delete-dialog" data-assignment-id="${assignment.id}"
                            data-user-name="${assignment.userId}"
-                           title="Remove role assignment for user ${assignment.userId}."><i
-                                    class="fa fa-trash"></i></a>
+                           title="Delete role for ${assignment.userId}."><i class="fa fa-trash"></i></a>
                         </@sec.authorize>
                     </td>
                     </@sec.authorize>
@@ -380,7 +378,7 @@
             allValues.push($(this).val());
         });
         $('#role-assignments table tbody tr').filter(function () {
-            $(this).toggle(allValues.length === 0 || allValues.includes($(this).find('.role-column').text()));
+            $(this).toggle(allValues.length === 0 || allValues.indexOf($(this).find('.role-column').text()) >= 0);
         });
     });
 
@@ -455,12 +453,12 @@
 
     $("#new-user-name").autocomplete({
         autoFocus: true,
-        appendTo: "#add-new-dialog",
+        appendTo: "#orphan-dialog",
         minLength: 2,
         source: function (request, response) {
             var term = request.term;
             $.ajax({
-                url: '<@spring.url "/admin/vaults/autocompleteuun/"/>' + term,
+                url: '<@spring.url "/vaults/autocompleteuun/"/>' + term,
                 type: 'GET',
                 dataType: "json",
                 success: function (data) {
