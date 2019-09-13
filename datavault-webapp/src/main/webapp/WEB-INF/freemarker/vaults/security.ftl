@@ -111,7 +111,7 @@
                 </div>
                 <div class="modal-body">
 
-                    <div class="alert alert-danger hidden error" role="alert"></div>
+                    <div id="orphan-dialog-error" class="alert alert-danger hidden error" role="alert"></div>
                     <div id="transfer-inputs">
 
                         <div class="col-sm-10 form-group ui-widget">
@@ -190,7 +190,7 @@
                     <h4 class="modal-title" id="add-new-user-title">Add New User</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-danger error hidden" role="alert"></div>
+                    <div id="add-new-dialog-error" class="alert alert-danger error hidden" role="alert"></div>
                     <div class="form-group ui-widget">
                         <label for="new-user-name" class="control-label col-sm-2">Name:</label>
                         <div class="col-sm-10">
@@ -234,7 +234,7 @@
                     <h4 class="modal-title" id="update-existing-title">Edit User's Role</h4>
                 </div>
                 <div class="modal-body">
-                    <div class="alert alert-danger error hidden" role="alert"></div>
+                    <div id="update-existing-dialog-error" class="alert alert-danger error hidden" role="alert"></div>
                     <div class="form-group ui-widget">
                         <label for="role-update-user-name" class="control-label col-sm-2">Name:</label>
                         <label id="role-update-user-name"></label>
@@ -273,7 +273,7 @@
                                 class="fa fa-times" aria-hidden="true"></i></button>
                     <h4 class="modal-title" id="delete-title">Delete User</h4>
                 </div>
-                <div class="alert alert-danger hidden error" role="alert"></div>
+                <div id="delete-dialog-error" class="alert alert-danger hidden error" role="alert"></div>
                 <div class="modal-body">
                     <p>Do you want to delete <label id="delete-role-user-name"></label> from this vault?</p>
                 </div>
@@ -431,6 +431,7 @@
 
     for (var formIndex in forms) {
         var formSelector = forms[formIndex];
+        const errorSelector = formSelector + '-error';
         $(formSelector).submit(function (event) {
             event.preventDefault();
             var form = $(this);
@@ -442,14 +443,14 @@
                 method: 'POST',
                 url: url,
                 data: formData,
-                success: function () {
+                success: function (data) {
+                    if (ErrorHandler.isForceLogoutResponse(data)) {
+                        return ErrorHandler.handleForceLogoutResponse();
+                    }
                     window.location.href = redirectUri;
                 },
                 error: function (xhr) {
-                    var error = form.find('.error').removeClass('hidden');
-                    var text = xhr.status === 422 ? xhr.responseText : 'An error occurred. Please contact your system administrator.';
-
-                    error.html(text.replace("\n", "<br/>"));
+                    ErrorHandler.handleAjaxError(errorSelector, xhr);
                 }
             });
         });
@@ -476,6 +477,9 @@
                 dataType: "json",
                 success: function (data) {
                     response(data);
+                },
+                error: function(xhr) {
+                    ErrorHandler.handleAjaxError('#orphan-dialog-error', xhr);
                 }
             });
         },
@@ -498,6 +502,9 @@
                 dataType: "json",
                 success: function (data) {
                     response(data);
+                },
+                error: function(xhr) {
+                    ErrorHandler.handleAjaxError('#add-new-dialog-error', xhr);
                 }
             });
         },
